@@ -4,9 +4,19 @@ mod menu;
 use logging::init_logging;
 use menu::MenuScene;
 use quad::{
+    ecs::World,
     windowing::{LogicalSize, Window},
-    Quad, QuadConfig,
+    Quad, QuadConfig, Scene, SceneResult,
 };
+
+#[derive(Default)]
+struct RootScene {}
+
+impl Scene for RootScene {
+    fn update(&mut self, world: &mut World) -> SceneResult {
+        SceneResult::Replace(Box::new(MenuScene::new(world)))
+    }
+}
 
 fn main() {
     init_logging();
@@ -21,5 +31,5 @@ fn main() {
         ..Default::default()
     };
 
-    Quad::new(&config).run(Box::new(MenuScene::default()));
+    Quad::new(&config).run(Box::new(RootScene::default()));
 }
