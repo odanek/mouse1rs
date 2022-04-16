@@ -1,22 +1,13 @@
 mod logging;
 mod menu;
+mod mouse;
 
 use logging::init_logging;
-use menu::MenuScene;
+use mouse::MouseScene;
 use quad::{
-    ecs::World,
     windowing::{LogicalSize, Window},
-    Quad, QuadConfig, Scene, SceneResult,
+    Quad, QuadConfig,
 };
-
-#[derive(Default)]
-struct RootScene {}
-
-impl Scene for RootScene {
-    fn update(&mut self, world: &mut World) -> SceneResult {
-        SceneResult::Replace(Box::new(MenuScene::new(world)))
-    }
-}
 
 fn main() {
     init_logging();
@@ -31,5 +22,5 @@ fn main() {
         ..Default::default()
     };
 
-    Quad::new(&config).run(Box::new(RootScene::default()));
+    Quad::new(&config).run(Box::new(MouseScene::default()));
 }
