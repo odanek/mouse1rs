@@ -1,9 +1,13 @@
 use quad::{
-    ecs::{Commands, IntoSystem, Res, Schedule, Scheduler, World, ResMut},
+    ecs::{Commands, IntoSystem, Res, ResMut, Schedule, Scheduler, World},
     input::{KeyCode, KeyboardInput},
     render::color::Color,
-    text::{Text, TextBundle, TextSection, TextStyle, TextAlignment, HorizontalAlign, VerticalAlign},
-    Scene, SceneResult, windowing::Windows, transform::Transform,
+    text::{
+        HorizontalAlign, Text, TextAlignment, TextBundle, TextSection, TextStyle, VerticalAlign,
+    },
+    transform::Transform,
+    windowing::Windows,
+    Scene, SceneResult,
 };
 
 use crate::mouse::GameAssets;
@@ -50,7 +54,11 @@ impl Default for MenuScene {
     }
 }
 
-fn menu_init(mut commands: Commands, assets: Res<GameAssets>, windows: ResMut<Windows>) -> SceneResult {
+fn menu_init(
+    mut commands: Commands,
+    assets: Res<GameAssets>,
+    windows: ResMut<Windows>,
+) -> SceneResult {
     let window_size = windows.primary().size();
     println!("{:?}", window_size);
 
@@ -76,8 +84,8 @@ fn menu_init(mut commands: Commands, assets: Res<GameAssets>, windows: ResMut<Wi
             ],
             alignment: TextAlignment {
                 horizontal: HorizontalAlign::Center,
-                vertical: VerticalAlign::Top
-            }
+                vertical: VerticalAlign::Top,
+            },
         },
         transform: Transform::from_xyz(0.0, window_size.height / 2.0, 0.0),
         ..Default::default()
