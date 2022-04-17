@@ -5,9 +5,9 @@ use quad::{
     text::{
         HorizontalAlign, Text, TextAlignment, TextBundle, TextSection, TextStyle, VerticalAlign,
     },
-    transform::Transform,
+    transform::{Transform, TransformBundle},
     windowing::Windows,
-    Scene, SceneResult,
+    Scene, SceneResult
 };
 
 use crate::mouse::GameAssets;
@@ -90,77 +90,91 @@ fn menu_init(
         ..Default::default()
     });
 
-    commands.spawn().insert_bundle(TextBundle {
-        text: Text {
-            sections: vec![
-                TextSection {
-                    value: "1.  ".to_string(),
-                    style: TextStyle {
-                        font: assets.font.clone(),
-                        font_size: 30.0,
-                        color: Color::GREEN,
+    let menu1 = commands
+        .spawn()
+        .insert_bundle(TextBundle {
+            text: Text {
+                sections: vec![
+                    TextSection {
+                        value: "1.  ".to_string(),
+                        style: TextStyle {
+                            font: assets.font.clone(),
+                            font_size: 30.0,
+                            color: Color::GREEN,
+                        },
                     },
-                },
-                TextSection {
-                    value: " Nova hra".to_string(),
-                    style: TextStyle {
-                        font: assets.font.clone(),
-                        font_size: 30.0,
-                        color: Color::ORANGE_RED,
+                    TextSection {
+                        value: " Nova hra".to_string(),
+                        style: TextStyle {
+                            font: assets.font.clone(),
+                            font_size: 30.0,
+                            color: Color::ORANGE_RED,
+                        },
                     },
-                },
-            ],
+                ],
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(-65.0, 30.0, 0.0),
             ..Default::default()
-        },
-        transform: Transform::from_xyz(-65.0, 30.0, 0.0),
-        ..Default::default()
-    });
+        })
+        .id();
 
-    commands.spawn().insert_bundle(TextBundle {
-        text: Text {
-            sections: vec![
-                TextSection {
-                    value: "2.  ".to_string(),
-                    style: TextStyle {
-                        font: assets.font.clone(),
-                        font_size: 30.0,
-                        color: Color::GREEN,
+    let menu2 = commands
+        .spawn()
+        .insert_bundle(TextBundle {
+            text: Text {
+                sections: vec![
+                    TextSection {
+                        value: "2.  ".to_string(),
+                        style: TextStyle {
+                            font: assets.font.clone(),
+                            font_size: 30.0,
+                            color: Color::GREEN,
+                        },
                     },
-                },
-                TextSection {
-                    value: " Konec".to_string(),
-                    style: TextStyle {
-                        font: assets.font.clone(),
-                        font_size: 30.0,
-                        color: Color::ORANGE_RED,
+                    TextSection {
+                        value: " Konec".to_string(),
+                        style: TextStyle {
+                            font: assets.font.clone(),
+                            font_size: 30.0,
+                            color: Color::ORANGE_RED,
+                        },
                     },
-                },
-            ],
+                ],
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(-65.0, 0.0, 0.0),
             ..Default::default()
-        },
-        transform: Transform::from_xyz(-65.0, 0.0, 0.0),
-        ..Default::default()
-    });
+        })
+        .id();
 
-    commands.spawn().insert_bundle(TextBundle {
-        text: Text {
-            sections: vec![TextSection {
-                value: "Napsal O. Danek v roce 2022 v jazyce Rust".to_string(),
-                style: TextStyle {
-                    font: assets.font.clone(),
-                    font_size: 25.0,
-                    color: Color::PINK,
-                },
-            }],
+    let disclaimer = commands
+        .spawn()
+        .insert_bundle(TextBundle {
+            text: Text {
+                sections: vec![TextSection {
+                    value: "Napsal O. Danek v roce 2022 v jazyce Rust".to_string(),
+                    style: TextStyle {
+                        font: assets.font.clone(),
+                        font_size: 25.0,
+                        color: Color::PINK,
+                    },
+                }],
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(
+                -window_size.width / 2.0,
+                -window_size.height / 2.0 + 25.0,
+                0.0,
+            ),
             ..Default::default()
-        },
-        transform: Transform::from_xyz(
-            -window_size.width / 2.0,
-            -window_size.height / 2.0 + 25.0,
-            0.0,
-        ),
-        ..Default::default()
-    });
+        })
+        .id();
+
+    commands
+        .spawn()
+        .push_children(&[menu1, menu2, disclaimer])
+        .insert_bundle(TransformBundle::default());
 
     SceneResult::Ok
 }
