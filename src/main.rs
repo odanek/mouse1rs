@@ -1,3 +1,4 @@
+mod level;
 mod logging;
 mod menu;
 mod mouse;

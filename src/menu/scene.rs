@@ -1,55 +1,40 @@
 use quad::{
-    ecs::{Commands, IntoSystem, Res, ResMut, Schedule, Scheduler, World},
+    ecs::{Commands, Entity, IntoSystem, Res, ResMut, Resource, Schedule, Scheduler, World},
     input::{KeyCode, KeyboardInput},
     render::color::Color,
-    text::{
-        HorizontalAlign, Text, TextAlignment, TextBundle, TextSection, TextStyle, VerticalAlign,
-    },
+    text::{Text, TextBundle, TextSection, TextStyle},
     transform::{Transform, TransformBundle},
     windowing::Windows,
-    Scene, SceneResult
+    Scene, SceneResult, SceneStage,
 };
 
-use crate::mouse::GameAssets;
-
-#[derive(Clone, Copy, PartialEq, Eq)]
-enum MenuStage {
-    Start,
-    Update,
-}
+use crate::{level::LevelScene, mouse::GameAssets};
 
 struct MenuSceneSchedule {
     start: Schedule<(), SceneResult>,
     update: Schedule<(), SceneResult>,
 }
 
+#[derive(Resource)]
+struct MenuData {
+    root: Entity,
+}
+
+#[derive(Default)]
 pub struct MenuScene {
-    stage: MenuStage,
     schedule: Option<MenuSceneSchedule>,
 }
 
 impl Scene for MenuScene {
-    fn update(&mut self, world: &mut World) -> SceneResult {
+    fn update(&mut self, stage: SceneStage, world: &mut World) -> SceneResult {
         let schedule = self.schedule.get_or_insert_with(|| MenuSceneSchedule {
             start: Scheduler::single(menu_init.system(world)),
             update: Scheduler::single(menu_update.system(world)),
         });
 
-        match self.stage {
-            MenuStage::Start => {
-                self.stage = MenuStage::Update;
-                schedule.start.run(world)
-            }
-            MenuStage::Update => schedule.update.run(world),
-        }
-    }
-}
-
-impl Default for MenuScene {
-    fn default() -> Self {
-        Self {
-            stage: MenuStage::Start,
-            schedule: None,
+        match stage {
+            SceneStage::Start | SceneStage::Resume => schedule.start.run(world),
+            SceneStage::Update => schedule.update.run(world),
         }
     }
 }
@@ -60,35 +45,6 @@ fn menu_init(
     windows: ResMut<Windows>,
 ) -> SceneResult {
     let window_size = windows.primary().size();
-
-    commands.spawn().insert_bundle(TextBundle {
-        text: Text {
-            sections: vec![
-                TextSection {
-                    value: "The ".to_string(),
-                    style: TextStyle {
-                        font: assets.font.clone(),
-                        font_size: 30.0,
-                        color: Color::BLUE,
-                    },
-                },
-                TextSection {
-                    value: " Mouse".to_string(),
-                    style: TextStyle {
-                        font: assets.font.clone(),
-                        font_size: 30.0,
-                        color: Color::GREEN,
-                    },
-                },
-            ],
-            alignment: TextAlignment {
-                horizontal: HorizontalAlign::Center,
-                vertical: VerticalAlign::Top,
-            },
-        },
-        transform: Transform::from_xyz(0.0, window_size.height / 2.0, 0.0),
-        ..Default::default()
-    });
 
     let menu1 = commands
         .spawn()
@@ -171,17 +127,28 @@ fn menu_init(
         })
         .id();
 
-    commands
+    let root = commands
         .spawn()
         .push_children(&[menu1, menu2, disclaimer])
-        .insert_bundle(TransformBundle::default());
+        .insert_bundle(TransformBundle::default())
+        .id();
+
+    commands.insert_resource(MenuData { root });
 
     SceneResult::Ok
 }
 
-fn menu_update(keyboard: Res<KeyboardInput>) -> SceneResult {
+fn menu_update(
+    mut commands: Commands,
+    data: Res<MenuData>,
+    keyboard: Res<KeyboardInput>,
+) -> SceneResult {
     if keyboard.just_pressed(KeyCode::Escape) || keyboard.just_pressed(KeyCode::Key2) {
         SceneResult::Pop
+    } else if keyboard.just_pressed(KeyCode::Key1) {
+        commands.entity(data.root).despawn_recursive();
+        commands.remove_resource::<MenuData>();
+        SceneResult::Push(Box::new(LevelScene::new(0)))
     } else {
         SceneResult::Ok
     }
