@@ -11,6 +11,10 @@ repository = "https://github.com/odanek/mouse1rs"
 [profile.release]
 lto = true
 
+[[bin]]
+name = "ob5totga"
+path = "bin/ob5totga.rs"
+
 [dependencies]
 log = "0.4.14"
 cgm = { path = "../cgm" }

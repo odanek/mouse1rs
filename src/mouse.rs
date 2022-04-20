@@ -69,5 +69,5 @@ fn bootstrap(
         ..Default::default()
     });
 
-    SceneResult::Replace(Box::new(MenuScene::default()))
+    SceneResult::Replace(Box::new(MenuScene::default()), SceneStage::Start)
 }

@@ -11,7 +11,7 @@ use quad::{
 };
 
 fn main() {
-    init_logging();
+    init_logging(); // TODO Move to quad
 
     Quad::new(QuadConfig {
         main_window: WindowDescriptor {

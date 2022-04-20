@@ -39,13 +39,13 @@ impl Scene for LevelScene {
 }
 
 fn level_init() -> SceneResult {
-    SceneResult::Ok
+    SceneResult::Ok(SceneStage::Update)
 }
 
 fn level_update(mut commands: Commands, keyboard: Res<KeyboardInput>) -> SceneResult {
     if keyboard.just_pressed(KeyCode::Escape) {
-        SceneResult::Pop
+        SceneResult::Pop(SceneStage::Resume)
     } else {
-        SceneResult::Ok
+        SceneResult::Ok(SceneStage::Update)
     }
 }

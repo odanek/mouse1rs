@@ -11,8 +11,9 @@ use quad::{
 use crate::{level::LevelScene, mouse::GameAssets};
 
 struct MenuSceneSchedule {
-    start: Schedule<(), SceneResult>,
+    start: Schedule<(), SceneResult>, // TODO Typealias
     update: Schedule<(), SceneResult>,
+    pause: Schedule<(), SceneResult>,
 }
 
 #[derive(Resource)]
@@ -30,11 +31,14 @@ impl Scene for MenuScene {
         let schedule = self.schedule.get_or_insert_with(|| MenuSceneSchedule {
             start: Scheduler::single(menu_init.system(world)),
             update: Scheduler::single(menu_update.system(world)),
+            pause: Scheduler::single(menu_pause.system(world)),
         });
 
         match stage {
             SceneStage::Start | SceneStage::Resume => schedule.start.run(world),
+            SceneStage::Pause => schedule.pause.run(world),
             SceneStage::Update => schedule.update.run(world),
+            _ => unreachable!(),
         }
     }
 }
@@ -135,21 +139,21 @@ fn menu_init(
 
     commands.insert_resource(MenuData { root });
 
-    SceneResult::Ok
+    SceneResult::Ok(SceneStage::Update)
 }
 
-fn menu_update(
-    mut commands: Commands,
-    data: Res<MenuData>,
-    keyboard: Res<KeyboardInput>,
-) -> SceneResult {
+fn menu_update(keyboard: Res<KeyboardInput>) -> SceneResult {
     if keyboard.just_pressed(KeyCode::Escape) || keyboard.just_pressed(KeyCode::Key2) {
-        SceneResult::Pop
+        SceneResult::Quit
     } else if keyboard.just_pressed(KeyCode::Key1) {
-        commands.entity(data.root).despawn_recursive();
-        commands.remove_resource::<MenuData>();
-        SceneResult::Push(Box::new(LevelScene::new(0)))
+        SceneResult::Ok(SceneStage::Pause)
     } else {
-        SceneResult::Ok
+        SceneResult::Ok(SceneStage::Update)
     }
+}
+
+fn menu_pause(mut commands: Commands, data: Res<MenuData>) -> SceneResult {
+    commands.entity(data.root).despawn_recursive();
+    commands.remove_resource::<MenuData>();
+    SceneResult::Push(Box::new(LevelScene::new(0)), SceneStage::Start)
 }
