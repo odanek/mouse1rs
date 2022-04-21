@@ -7,13 +7,13 @@ edition = "2021"
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/odanek/mouse1rs"
+default-run = "mouse1rs"
 
 [profile.release]
 lto = true
 
 [[bin]]
 name = "ob5totga"
-path = "bin/ob5totga.rs"
 
 [dependencies]
 log = "0.4.14"
