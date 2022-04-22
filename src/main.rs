@@ -17,7 +17,7 @@ fn main() {
         main_window: WindowDescriptor {
             title: "The Mouse 1".to_string(),
             size: LogicalSize {
-                width: 800.0,
+                width: 960.0,
                 height: 600.0,
             }
             .into(),

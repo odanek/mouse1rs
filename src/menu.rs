@@ -8,7 +8,7 @@ use quad::{
     Scene, SceneResult, SceneStage,
 };
 
-use crate::{level::LevelScene, mouse::GameAssets};
+use crate::{level::{LevelScene, Level}, mouse::GameAssets};
 
 struct MenuSceneSchedule {
     start: Schedule<(), SceneResult>, // TODO Typealias
@@ -155,5 +155,6 @@ fn menu_update(keyboard: Res<KeyboardInput>) -> SceneResult {
 fn menu_pause(mut commands: Commands, data: Res<MenuData>) -> SceneResult {
     commands.entity(data.root).despawn_recursive();
     commands.remove_resource::<MenuData>();
-    SceneResult::Push(Box::new(LevelScene::new(0)), SceneStage::Start)
+    commands.insert_resource(Level(0));
+    SceneResult::Push(Box::new(LevelScene::default()), SceneStage::Start)
 }

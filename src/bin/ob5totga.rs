@@ -13,17 +13,35 @@ struct Rgb {
 }
 
 impl Rgb {
-    const BLACK: Rgb = Rgb { r: 0, g: 0, b: 0 };
+    pub fn new(r: u8, g: u8, b: u8) -> Self {
+        Self {r, g, b}
+    }
+}
 
-    pub fn set(&mut self, r: u8, g: u8, b: u8) {
-        self.r = r;
-        self.g = g;
-        self.b = b;
+#[repr(C)]
+#[derive(Clone, Copy, Debug)]
+struct Rgba {
+    pub r: u8,
+    pub g: u8,
+    pub b: u8,
+    pub a: u8,
+}
+
+impl Rgba {
+    const BLACK: Rgba = Rgba { r: 0, g: 0, b: 0, a: 255 };
+
+    pub fn from_rgb(rgb: Rgb, a: u8) -> Self {
+        Self {
+            r: rgb.r,
+            g: rgb.g,
+            b: rgb.b,
+            a,
+        }
     }
 }
 
 struct Palette {
-    data: [Rgb; 256],
+    data: Vec<Rgb>,
 }
 
 impl Palette {
@@ -31,11 +49,11 @@ impl Palette {
         let file = File::open(path)?;
         let mut reader = BufReader::new(file);
 
-        let mut data = [Rgb::BLACK; 256];
-        for color in &mut data {
+        let mut data = Vec::new();
+        for _ in 0..256 {
             let mut rgb = [0u8; 3];
             reader.read_exact(&mut rgb)?;
-            color.set(rgb[0], rgb[1], rgb[2]);
+            data.push(Rgb::new(rgb[0], rgb[1], rgb[2]));
         }
 
         Ok(Self { data })
@@ -64,7 +82,7 @@ impl Size {
 
 struct Image {
     size: Size,
-    data: Vec<Rgb>,
+    data: Vec<Rgba>,
 }
 
 impl Image {
@@ -87,7 +105,8 @@ impl Image {
                 reader.read_exact(&mut input)?;
                 let color = palette.get(input[1] as usize);
                 for _ in 0..input[0] {
-                    data.push(color);
+                    let alpha = if input[1] == 255 { 0 } else { 255 };
+                    data.push(Rgba::from_rgb(color, alpha));
                 }
             }
             result.push(Self { size, data });
@@ -103,13 +122,13 @@ impl Image {
         let wb = self.size.width.to_le_bytes();
         let hb = self.size.height.to_le_bytes();
         let header: [u8; 18] = [
-            0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, wb[0], wb[1], hb[0], hb[1], 24, 0,
+            0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, wb[0], wb[1], hb[0], hb[1], 32, 0,
         ];
         writer.write_all(&header)?;
 
         for row in self.data.chunks(self.size.width as usize).rev() {
             for rgb in row {
-                let color = [rgb.b, rgb.g, rgb.r];
+                let color = [rgb.b, rgb.g, rgb.r, rgb.a];
                 writer.write_all(&color)?;
             }
         }
@@ -123,7 +142,7 @@ impl Image {
             .fold(0u32, |width, image| width + image.size.width);
         let size = Size::new(width, images[0].size.height);
         let usize_total_width = size.width as usize;
-        let mut data = vec![Rgb::BLACK; size.count()];
+        let mut data = vec![Rgba::BLACK; size.count()];
 
         let mut left = usize_total_width;
         for image in images {
@@ -148,5 +167,6 @@ fn main() {
     joined
         .save_tga("lev1.tga")
         .expect("Unable to write output file");
+    images[10].save_tga("lev1bcg.tga").expect("Unable to save backgroudn");
     println!("Done");
 }
