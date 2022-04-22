@@ -14,7 +14,7 @@ struct Rgb {
 
 impl Rgb {
     pub fn new(r: u8, g: u8, b: u8) -> Self {
-        Self {r, g, b}
+        Self { r, g, b }
     }
 }
 
@@ -28,7 +28,12 @@ struct Rgba {
 }
 
 impl Rgba {
-    const BLACK: Rgba = Rgba { r: 0, g: 0, b: 0, a: 255 };
+    const BLACK: Rgba = Rgba {
+        r: 0,
+        g: 0,
+        b: 0,
+        a: 255,
+    };
 
     pub fn from_rgb(rgb: Rgb, a: u8) -> Self {
         Self {
@@ -167,6 +172,8 @@ fn main() {
     joined
         .save_tga("lev1.tga")
         .expect("Unable to write output file");
-    images[10].save_tga("lev1bcg.tga").expect("Unable to save backgroudn");
+    images[10]
+        .save_tga("lev1bcg.tga")
+        .expect("Unable to save backgroudn");
     println!("Done");
 }

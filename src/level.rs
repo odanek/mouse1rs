@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use quad::{
     asset::AssetServer,
-    ecs::{Commands, IntoSystem, Res, ResMut, Resource, Schedule, Scheduler, World, Entity},
+    ecs::{Commands, Entity, IntoSystem, Res, ResMut, Resource, Schedule, Scheduler, World},
     input::{KeyCode, KeyboardInput},
     sprite::SpriteBundle,
     transform::{Transform, TransformBundle},
@@ -104,7 +104,11 @@ fn level_init(
     SceneResult::Ok(SceneStage::Update)
 }
 
-fn level_update(mut commands: Commands, level_data: Res<LevelData>, keyboard: Res<KeyboardInput>) -> SceneResult {
+fn level_update(
+    mut commands: Commands,
+    level_data: Res<LevelData>,
+    keyboard: Res<KeyboardInput>,
+) -> SceneResult {
     if keyboard.just_pressed(KeyCode::Escape) {
         commands.entity(level_data.root).despawn_recursive();
         commands.remove_resource::<LevelData>();
