@@ -2,8 +2,9 @@ use std::path::PathBuf;
 
 use quad::{
     asset::AssetServer,
-    ecs::{Commands, Entity, IntoSystem, Res, ResMut, Resource, Schedule, Scheduler, World},
+    ecs::{Commands, Entity, IntoSystem, Query, Res, ResMut, Resource, Schedule, Scheduler, World},
     input::{KeyCode, KeyboardInput},
+    render::cameras::Camera2d,
     sprite::SpriteBundle,
     transform::{Transform, TransformBundle},
     ty::Vec3,
@@ -59,9 +60,11 @@ fn level_init(
     level: Res<Level>,
     asset_server: Res<AssetServer>,
     windows: ResMut<Windows>,
+    mut camera: Query<(&Camera2d, &mut Transform)>,
 ) -> SceneResult {
     let window_size = windows.primary().size();
     let zoom = window_size.width / 320.0;
+    let initial_x = 0.0; //4.5 * 320.0;
 
     let fg_texture = asset_server.load(level.fg_path());
     let bg_texture = asset_server.load(level.bg_path());
@@ -70,9 +73,11 @@ fn level_init(
         .spawn()
         .insert_bundle(SpriteBundle {
             texture: bg_texture,
+            transform: Transform::from_xy(initial_x, 0.0),
             ..Default::default()
         })
         .id();
+
     let fg = commands
         .spawn()
         .insert_bundle(SpriteBundle {
@@ -100,6 +105,10 @@ fn level_init(
         .id();
 
     commands.insert_resource(LevelData { root });
+
+    if let Ok(mut camera2d) = camera.single_mut() {
+        camera2d.1.translation.x = initial_x * zoom;
+    }
 
     SceneResult::Ok(SceneStage::Update)
 }
