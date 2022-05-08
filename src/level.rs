@@ -4,12 +4,12 @@ use quad::{
     asset::AssetServer,
     ecs::{Commands, Entity, IntoSystem, Query, Res, ResMut, Resource, Schedule, Scheduler, World},
     input::{KeyCode, KeyboardInput},
-    render::cameras::Camera2d,
+    render::{cameras::Camera2d},
     sprite::SpriteBundle,
     transform::{Transform, TransformBundle},
     ty::Vec3,
     windowing::Windows,
-    Scene, SceneResult, SceneStage,
+    Scene, SceneResult, SceneStage, timing::Time,
 };
 
 #[derive(Resource)]
@@ -63,8 +63,8 @@ fn level_init(
     mut camera: Query<(&Camera2d, &mut Transform)>,
 ) -> SceneResult {
     let window_size = windows.primary().size();
-    let zoom = window_size.width / 320.0;
-    let initial_x = 4.5 * 320.0;
+    let zoom = (window_size.height - 30.0) / 192.0;
+    let initial_x =0.0; //4.5 * 320.0;
 
     let fg_texture = asset_server.load(level.fg_path());
     let bg_texture = asset_server.load(level.bg_path());
@@ -82,22 +82,18 @@ fn level_init(
         .spawn()
         .insert_bundle(SpriteBundle {
             texture: fg_texture,
-            transform: Transform {
-                translation: Vec3::new(0.0, 0.0, 1.0),
-                ..Default::default()
-            },
+            transform: Transform::from_xyz(0.0, 0.0, 1.0),
             ..Default::default()
         })
         .id();
 
-    // TODO Je spravne ze translation je nasobena scale?
     let root = commands
         .spawn()
         .push_children(&[fg, bg])
         .insert_bundle(TransformBundle {
             local: Transform {
                 scale: Vec3::new(zoom, zoom, 1.0),
-                translation: Vec3::new(0.0, -8.0, 0.0),
+                translation: Vec3::new(0.0, -15.0, 0.0),
                 ..Default::default()
             },
             ..Default::default()
@@ -115,9 +111,19 @@ fn level_init(
 
 fn level_update(
     mut commands: Commands,
+    time: Res<Time>,
     level_data: Res<LevelData>,
     keyboard: Res<KeyboardInput>,
+    mut camera: Query<(&Camera2d, &mut Transform)>,
 ) -> SceneResult {
+    if let Ok((_, mut camera_pos)) = camera.single_mut() {
+        if keyboard.pressed(KeyCode::Left) {
+            camera_pos.translation.x -= 500.0 * time.delta_seconds();
+        } else if keyboard.pressed(KeyCode::Right) {
+            camera_pos.translation.x += 500.0 * time.delta_seconds();
+        }    
+    }
+
     if keyboard.just_pressed(KeyCode::Escape) {
         commands.entity(level_data.root).despawn_recursive();
         commands.remove_resource::<LevelData>();
