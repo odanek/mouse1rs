@@ -1,10 +1,13 @@
 use quad::{
-    ecs::{Commands, Entity, IntoSystem, Res, ResMut, Resource, Schedule, Scheduler, World},
+    ecs::{Commands, Entity, IntoSystem, Res, Resource, Schedule, Scheduler, World},
     input::{KeyCode, KeyboardInput},
     render::color::Color,
-    text::{Text, TextBundle, TextSection, TextStyle},
-    transform::{Transform, TransformBundle},
-    windowing::Windows,
+    text::{Text, TextSection, TextStyle},
+    ty::Size,
+    ui::{
+        entity::{NodeBundle, UiTextBundle},
+        AlignItems, FlexDirection, JustifyContent, PositionType, Style, Val,
+    },
     Scene, SceneResult, SceneStage,
 };
 
@@ -46,97 +49,112 @@ impl Scene for MenuScene {
     }
 }
 
-fn menu_init(
-    mut commands: Commands,
-    assets: Res<GameAssets>,
-    windows: ResMut<Windows>,
-) -> SceneResult {
-    let window_size = windows.primary().size();
-
+fn menu_init(mut commands: Commands, assets: Res<GameAssets>) -> SceneResult {
     let root = commands
-        .spawn()
-        .insert_bundle(TransformBundle::default())
+        .spawn_bundle(NodeBundle {
+            style: Style {
+                size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                position_type: PositionType::Absolute,
+                flex_direction: FlexDirection::Column,
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                ..Default::default()
+            },
+            color: Color::NONE.into(),
+            ..Default::default()
+        })
         .with_children(|parent| {
             parent
-                .spawn()
-                .insert_bundle(TextBundle {
-                    text: Text {
-                        sections: vec![
-                            TextSection {
-                                value: "1.  ".to_string(),
-                                style: TextStyle {
-                                    font: assets.font.clone(),
-                                    font_size: 30.0,
-                                    color: Color::GREEN,
-                                },
-                            },
-                            TextSection {
-                                value: " Nova hra".to_string(),
-                                style: TextStyle {
-                                    font: assets.font.clone(),
-                                    font_size: 30.0,
-                                    color: Color::ORANGE_RED,
-                                },
-                            },
-                        ],
+                .spawn_bundle(NodeBundle {
+                    style: Style {
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::FlexStart,
                         ..Default::default()
                     },
-                    transform: Transform::from_xyz(-65.0, 30.0, 0.0),
+                    color: Color::NONE.into(),
                     ..Default::default()
                 })
-                .id();
+                .with_children(|parent| {
+                    parent.spawn().insert_bundle(UiTextBundle {
+                        style: Default::default(),
+                        text: Text {
+                            sections: vec![
+                                TextSection {
+                                    value: "2.  ".to_string(),
+                                    style: TextStyle {
+                                        font: assets.font.clone(),
+                                        font_size: 30.0,
+                                        color: Color::GREEN,
+                                    },
+                                },
+                                TextSection {
+                                    value: " Konec".to_string(),
+                                    style: TextStyle {
+                                        font: assets.font.clone(),
+                                        font_size: 30.0,
+                                        color: Color::ORANGE_RED,
+                                    },
+                                },
+                            ],
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    });
+
+                    parent.spawn().insert_bundle(UiTextBundle {
+                        style: Default::default(),
+                        text: Text {
+                            sections: vec![
+                                TextSection {
+                                    value: "1.  ".to_string(),
+                                    style: TextStyle {
+                                        font: assets.font.clone(),
+                                        font_size: 30.0,
+                                        color: Color::GREEN,
+                                    },
+                                },
+                                TextSection {
+                                    value: " Nova hra".to_string(),
+                                    style: TextStyle {
+                                        font: assets.font.clone(),
+                                        font_size: 30.0,
+                                        color: Color::ORANGE_RED,
+                                    },
+                                },
+                            ],
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    });
+                });
 
             parent
-                .spawn()
-                .insert_bundle(TextBundle {
-                    text: Text {
-                        sections: vec![
-                            TextSection {
-                                value: "2.  ".to_string(),
-                                style: TextStyle {
-                                    font: assets.font.clone(),
-                                    font_size: 30.0,
-                                    color: Color::GREEN,
-                                },
-                            },
-                            TextSection {
-                                value: " Konec".to_string(),
-                                style: TextStyle {
-                                    font: assets.font.clone(),
-                                    font_size: 30.0,
-                                    color: Color::ORANGE_RED,
-                                },
-                            },
-                        ],
+                .spawn_bundle(NodeBundle {
+                    style: Style {
+                        size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                        position_type: PositionType::Absolute,
                         ..Default::default()
                     },
-                    transform: Transform::from_xyz(-65.0, 0.0, 0.0),
+                    color: Color::NONE.into(),
                     ..Default::default()
                 })
-                .id();
-
-            parent
-                .spawn()
-                .insert_bundle(TextBundle {
-                    text: Text {
-                        sections: vec![TextSection {
-                            value: "Napsal O. Danek v roce 2022 v jazyce Rust".to_string(),
-                            style: TextStyle {
-                                font: assets.font.clone(),
-                                font_size: 25.0,
-                                color: Color::PINK,
-                            },
-                        }],
+                .with_children(|parent| {
+                    parent.spawn().insert_bundle(UiTextBundle {
+                        style: Default::default(),
+                        text: Text {
+                            sections: vec![TextSection {
+                                value: "Napsal O. Danek v roce 2022 v jazyce Rust".to_string(),
+                                style: TextStyle {
+                                    font: assets.font.clone(),
+                                    font_size: 25.0,
+                                    color: Color::PINK,
+                                },
+                            }],
+                            ..Default::default()
+                        },
                         ..Default::default()
-                    },
-                    transform: Transform::from_xyz(
-                        -window_size.width / 2.0,
-                        -window_size.height / 2.0 + 25.0,
-                        0.0,
-                    ),
-                    ..Default::default()
-                })
-                .id();
+                    });
+                });
         })
         .id();
 

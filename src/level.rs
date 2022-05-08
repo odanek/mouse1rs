@@ -64,7 +64,7 @@ fn level_init(
 ) -> SceneResult {
     let window_size = windows.primary().size();
     let zoom = window_size.width / 320.0;
-    let initial_x = 0.0; //4.5 * 320.0;
+    let initial_x = 4.5 * 320.0;
 
     let fg_texture = asset_server.load(level.fg_path());
     let bg_texture = asset_server.load(level.bg_path());
