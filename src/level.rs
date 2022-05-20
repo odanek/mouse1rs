@@ -1,14 +1,14 @@
 use std::path::PathBuf;
 
 use quad::{
-    asset::{Handle},
-    ecs::{Commands, Entity, IntoSystem, Query, Res, ResMut, Resource, Schedule, Scheduler, World},
+    asset::Handle,
+    ecs::{Commands, Component, Entity, Query, Res, ResMut, Resource, Schedule, Scheduler, World},
     input::{KeyCode, KeyboardInput},
     render::{cameras::Camera2d, texture::Image},
-    sprite::{SpriteBundle, Sprite, Rect},
+    sprite::{Rect, Sprite, SpriteBundle},
     timing::Time,
     transform::{Transform, TransformBundle},
-    ty::{Vec3, Vec2},
+    ty::{Vec2, Vec3},
     windowing::Windows,
     Scene, SceneResult, SceneStage,
 };
@@ -22,6 +22,9 @@ pub struct LevelAssets {
     pub foreground: Handle<Image>,
 }
 
+#[derive(Component)]
+pub struct BackgroundImage;
+
 impl Level {
     pub fn fg_path(&self) -> PathBuf {
         format!("levels/level{}.tga", self.0 + 1).into()
@@ -34,7 +37,10 @@ impl Level {
 
 #[derive(Resource)]
 struct LevelData {
+    camera_position: f32,
     root: Entity,
+    zoom: f32,
+    quit: bool,
 }
 
 pub struct LevelSchedule {
@@ -50,8 +56,18 @@ pub struct LevelScene {
 impl Scene for LevelScene {
     fn update(&mut self, stage: SceneStage, world: &mut World) -> SceneResult {
         let schedule = self.schedule.get_or_insert_with(|| LevelSchedule {
-            start: Scheduler::single(level_init.system(world)),
-            update: Scheduler::single(level_update.system(world)),
+            start: Scheduler::chain(world)
+                .add(level_start)
+                // .add(position_camera)  // TODO How to fix?
+                // .add(position_background)
+                .add(finalize_start)
+                .build(),
+            update: Scheduler::chain(world)
+                .add(&handle_input)
+                .add(&position_camera)
+                .add(&position_background)
+                .add(&finalize_update)
+                .build(),
         });
 
         match stage {
@@ -62,21 +78,15 @@ impl Scene for LevelScene {
     }
 }
 
-fn level_init(
-    mut commands: Commands,
-    level_assets: Res<LevelAssets>,
-    windows: ResMut<Windows>,
-    mut camera: Query<(&Camera2d, &mut Transform)>,
-) -> SceneResult {
+fn level_start(mut commands: Commands, level_assets: Res<LevelAssets>, windows: ResMut<Windows>) {
     let window_size = windows.primary().size();
     let zoom = (window_size.height - 30.0) / 192.0;
-    let initial_x = 0.0; //4.5 * 320.0;
 
-    let bg = commands
+    let background = commands
         .spawn()
+        .insert(BackgroundImage)
         .insert_bundle(SpriteBundle {
             texture: level_assets.background.clone(),
-            transform: Transform::from_xy(initial_x, 0.0),
             sprite: Sprite {
                 rect: Some(Rect {
                     min: Vec2::new(0.0, 0.0),
@@ -84,12 +94,12 @@ fn level_init(
                 }),
                 custom_size: Some(Vec2::new(5.0 * 320.0, 192.0)),
                 ..Default::default()
-            },            
+            },
             ..Default::default()
         })
         .id();
 
-    let fg = commands
+    let foreground = commands
         .spawn()
         .insert_bundle(SpriteBundle {
             texture: level_assets.foreground.clone(),
@@ -100,7 +110,7 @@ fn level_init(
 
     let root = commands
         .spawn()
-        .push_children(&[fg, bg])
+        .push_children(&[foreground, background])
         .insert_bundle(TransformBundle {
             local: Transform {
                 scale: Vec3::new(zoom, zoom, 1.0),
@@ -111,31 +121,47 @@ fn level_init(
         })
         .id();
 
-    commands.insert_resource(LevelData { root });
+    commands.insert_resource(LevelData {
+        camera_position: 500.0,
+        root,
+        zoom,
+        quit: false,
+    });
+}
 
-    if let Ok(mut camera2d) = camera.single_mut() {
-        camera2d.1.translation.x = initial_x * zoom;
-    }
-
+fn finalize_start() -> SceneResult {
     SceneResult::Ok(SceneStage::Update)
 }
 
-fn level_update(
-    mut commands: Commands,
-    time: Res<Time>,
-    level_data: Res<LevelData>,
-    keyboard: Res<KeyboardInput>,
-    mut camera: Query<(&Camera2d, &mut Transform)>,
-) -> SceneResult {
-    if let Ok((_, mut camera_pos)) = camera.single_mut() {
-        if keyboard.pressed(KeyCode::Left) {
-            camera_pos.translation.x -= 500.0 * time.delta_seconds();
-        } else if keyboard.pressed(KeyCode::Right) {
-            camera_pos.translation.x += 500.0 * time.delta_seconds();
-        }
+fn handle_input(time: Res<Time>, mut level_data: ResMut<LevelData>, keyboard: Res<KeyboardInput>) {
+    if keyboard.pressed(KeyCode::Left) {
+        level_data.camera_position -= 200.0 * time.delta_seconds();
+    } else if keyboard.pressed(KeyCode::Right) {
+        level_data.camera_position += 200.0 * time.delta_seconds();
     }
 
     if keyboard.just_pressed(KeyCode::Escape) {
+        level_data.quit = true;
+    }
+}
+
+fn position_camera(level_data: Res<LevelData>, mut camera: Query<(&Camera2d, &mut Transform)>) {
+    if let Ok((_, mut camera_pos)) = camera.single_mut() {
+        camera_pos.translation.x = level_data.camera_position * level_data.zoom;
+    }
+}
+
+fn position_background(
+    level_data: Res<LevelData>,
+    mut background: Query<(&BackgroundImage, &mut Transform)>,
+) {
+    if let Ok((_, mut background_pos)) = background.single_mut() {
+        background_pos.translation.x = level_data.camera_position / 2.0;
+    }
+}
+
+fn finalize_update(mut commands: Commands, level_data: ResMut<LevelData>) -> SceneResult {
+    if level_data.quit {
         commands.entity(level_data.root).despawn_recursive();
         commands.remove_resource::<Level>();
         commands.remove_resource::<LevelAssets>();

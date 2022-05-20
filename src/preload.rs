@@ -1,11 +1,11 @@
 use quad::{
     asset::{AssetServer, Assets},
     ecs::{Commands, IntoSystem, Res, ResMut, Schedule, Scheduler, World},
-    render::{AddressMode, texture::Image},
+    render::{texture::Image, AddressMode},
     Scene, SceneResult, SceneStage,
 };
 
-use crate::level::{Level, LevelScene, LevelAssets};
+use crate::level::{Level, LevelAssets, LevelScene};
 
 pub struct PreloadSchedule {
     start: Schedule<(), SceneResult>,
@@ -40,10 +40,10 @@ fn preload_start(
     let foreground = asset_server.load(level.fg_path());
     let background = asset_server.load(level.bg_path());
 
-    commands.insert_resource(LevelAssets { 
+    commands.insert_resource(LevelAssets {
         foreground,
         background,
-     });
+    });
 
     SceneResult::Ok(SceneStage::Update)
 }
@@ -55,7 +55,7 @@ fn preload_update(
     if images.get(&level_assets.foreground).is_some() {
         if let Some(bg_image) = images.get_mut(&level_assets.background) {
             bg_image.sampler_descriptor.address_mode_u = AddressMode::Repeat;
-            return SceneResult::Replace(Box::new(LevelScene::default()), SceneStage::Start)
+            return SceneResult::Replace(Box::new(LevelScene::default()), SceneStage::Start);
         }
     }
 

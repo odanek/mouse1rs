@@ -11,10 +11,7 @@ use quad::{
     Scene, SceneResult, SceneStage,
 };
 
-use crate::{
-    level::{Level},
-    mouse::GameAssets, preload::PreloadScene,
-};
+use crate::{level::Level, mouse::GameAssets, preload::PreloadScene};
 
 struct MenuSceneSchedule {
     start: Schedule<(), SceneResult>, // TODO Typealias
