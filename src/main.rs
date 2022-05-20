@@ -2,6 +2,7 @@ mod level;
 mod logging;
 mod menu;
 mod mouse;
+mod preload;
 
 use logging::init_logging;
 use mouse::MouseScene;
@@ -12,6 +13,8 @@ use quad::{
 
 fn main() {
     init_logging(); // TODO Move to quad
+
+    // TODO Prepocitat zoom at odpovida velikost pixelu CRT monitorum
 
     Quad::new(QuadConfig {
         main_window: WindowDescriptor {

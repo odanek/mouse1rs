@@ -12,8 +12,8 @@ use quad::{
 };
 
 use crate::{
-    level::{Level, LevelScene},
-    mouse::GameAssets,
+    level::{Level},
+    mouse::GameAssets, preload::PreloadScene,
 };
 
 struct MenuSceneSchedule {
@@ -177,5 +177,5 @@ fn menu_pause(mut commands: Commands, data: Res<MenuData>) -> SceneResult {
     commands.entity(data.root).despawn_recursive();
     commands.remove_resource::<MenuData>();
     commands.insert_resource(Level(0));
-    SceneResult::Push(Box::new(LevelScene::default()), SceneStage::Start)
+    SceneResult::Push(Box::new(PreloadScene::default()), SceneStage::Start)
 }

@@ -1,19 +1,26 @@
 use std::path::PathBuf;
 
 use quad::{
-    asset::AssetServer,
+    asset::{Handle},
     ecs::{Commands, Entity, IntoSystem, Query, Res, ResMut, Resource, Schedule, Scheduler, World},
     input::{KeyCode, KeyboardInput},
-    render::{cameras::Camera2d},
-    sprite::SpriteBundle,
+    render::{cameras::Camera2d, texture::Image},
+    sprite::{SpriteBundle, Sprite, Rect},
+    timing::Time,
     transform::{Transform, TransformBundle},
-    ty::Vec3,
+    ty::{Vec3, Vec2},
     windowing::Windows,
-    Scene, SceneResult, SceneStage, timing::Time,
+    Scene, SceneResult, SceneStage,
 };
 
 #[derive(Resource)]
 pub struct Level(pub u32);
+
+#[derive(Resource)]
+pub struct LevelAssets {
+    pub background: Handle<Image>,
+    pub foreground: Handle<Image>,
+}
 
 impl Level {
     pub fn fg_path(&self) -> PathBuf {
@@ -57,23 +64,27 @@ impl Scene for LevelScene {
 
 fn level_init(
     mut commands: Commands,
-    level: Res<Level>,
-    asset_server: Res<AssetServer>,
+    level_assets: Res<LevelAssets>,
     windows: ResMut<Windows>,
     mut camera: Query<(&Camera2d, &mut Transform)>,
 ) -> SceneResult {
     let window_size = windows.primary().size();
     let zoom = (window_size.height - 30.0) / 192.0;
-    let initial_x =0.0; //4.5 * 320.0;
-
-    let fg_texture = asset_server.load(level.fg_path());
-    let bg_texture = asset_server.load(level.bg_path());
+    let initial_x = 0.0; //4.5 * 320.0;
 
     let bg = commands
         .spawn()
         .insert_bundle(SpriteBundle {
-            texture: bg_texture,
+            texture: level_assets.background.clone(),
             transform: Transform::from_xy(initial_x, 0.0),
+            sprite: Sprite {
+                rect: Some(Rect {
+                    min: Vec2::new(0.0, 0.0),
+                    max: Vec2::new(5.0 * 320.0, 192.0),
+                }),
+                custom_size: Some(Vec2::new(5.0 * 320.0, 192.0)),
+                ..Default::default()
+            },            
             ..Default::default()
         })
         .id();
@@ -81,7 +92,7 @@ fn level_init(
     let fg = commands
         .spawn()
         .insert_bundle(SpriteBundle {
-            texture: fg_texture,
+            texture: level_assets.foreground.clone(),
             transform: Transform::from_xyz(0.0, 0.0, 1.0),
             ..Default::default()
         })
@@ -121,11 +132,13 @@ fn level_update(
             camera_pos.translation.x -= 500.0 * time.delta_seconds();
         } else if keyboard.pressed(KeyCode::Right) {
             camera_pos.translation.x += 500.0 * time.delta_seconds();
-        }    
+        }
     }
 
     if keyboard.just_pressed(KeyCode::Escape) {
         commands.entity(level_data.root).despawn_recursive();
+        commands.remove_resource::<Level>();
+        commands.remove_resource::<LevelAssets>();
         commands.remove_resource::<LevelData>();
         SceneResult::Pop(SceneStage::Resume)
     } else {
