@@ -1,10 +1,9 @@
 use std::path::PathBuf;
 
 use quad::{
-    asset::Handle,
     ecs::{Commands, Component, Entity, Query, Res, ResMut, Resource, Schedule, Scheduler, World},
     input::{KeyCode, KeyboardInput},
-    render::{cameras::Camera2d, texture::Image},
+    render::cameras::Camera2d,
     sprite::{Rect, Sprite, SpriteBundle},
     timing::Time,
     transform::{Transform, TransformBundle},
@@ -13,14 +12,10 @@ use quad::{
     Scene, SceneResult, SceneStage,
 };
 
-#[derive(Resource)]
-pub struct Level(pub u32);
+use crate::mouse::GameAssets;
 
 #[derive(Resource)]
-pub struct LevelAssets {
-    pub background: Handle<Image>,
-    pub foreground: Handle<Image>,
-}
+pub struct Level(pub u32);
 
 #[derive(Component)]
 pub struct BackgroundImage;
@@ -78,7 +73,7 @@ impl Scene for LevelScene {
     }
 }
 
-fn level_start(mut commands: Commands, level_assets: Res<LevelAssets>, windows: ResMut<Windows>) {
+fn level_start(mut commands: Commands, game_assets: Res<GameAssets>, windows: ResMut<Windows>) {
     let window_size = windows.primary().size();
     let zoom = (window_size.height - 30.0) / 192.0;
 
@@ -86,7 +81,7 @@ fn level_start(mut commands: Commands, level_assets: Res<LevelAssets>, windows: 
         .spawn()
         .insert(BackgroundImage)
         .insert_bundle(SpriteBundle {
-            texture: level_assets.background.clone(),
+            texture: game_assets.background.clone(),
             sprite: Sprite {
                 rect: Some(Rect {
                     min: Vec2::new(0.0, 0.0),
@@ -102,7 +97,7 @@ fn level_start(mut commands: Commands, level_assets: Res<LevelAssets>, windows: 
     let foreground = commands
         .spawn()
         .insert_bundle(SpriteBundle {
-            texture: level_assets.foreground.clone(),
+            texture: game_assets.foreground.clone(),
             transform: Transform::from_xyz(0.0, 0.0, 1.0),
             ..Default::default()
         })
@@ -164,7 +159,6 @@ fn finalize_update(mut commands: Commands, level_data: ResMut<LevelData>) -> Sce
     if level_data.quit {
         commands.entity(level_data.root).despawn_recursive();
         commands.remove_resource::<Level>();
-        commands.remove_resource::<LevelAssets>();
         commands.remove_resource::<LevelData>();
         SceneResult::Pop(SceneStage::Resume)
     } else {

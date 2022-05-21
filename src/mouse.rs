@@ -1,8 +1,8 @@
 use quad::{
-    asset::{AssetServer, Handle},
-    ecs::{Commands, IntoSystem, Res, Resource, Scheduler, World},
+    asset::{AssetServer, Handle, Assets},
+    ecs::{Commands, IntoSystem, Res, Resource, Scheduler, World, Schedule, ResMut},
     pipeline::ClearColor,
-    render::color::Color,
+    render::{AddressMode, color::Color, texture::Image},
     text::{Font, Text, TextSection, TextStyle},
     ty::Size,
     ui::{
@@ -12,27 +12,52 @@ use quad::{
     Scene, SceneResult, SceneStage,
 };
 
-use crate::menu::MenuScene;
+use crate::{menu::MenuScene, level::Level};
 
 #[derive(Resource)]
 pub struct GameAssets {
     pub font: Handle<Font>,
+    pub background: Handle<Image>,
+    pub foreground: Handle<Image>,
+}
+
+pub struct MouseSchedule {
+    start: Schedule<(), SceneResult>,
+    update: Schedule<(), SceneResult>,
 }
 
 #[derive(Default)]
-pub struct MouseScene {}
+pub struct MouseScene {
+    schedule: Option<MouseSchedule>,
+}
 
 impl Scene for MouseScene {
-    fn update(&mut self, _stage: SceneStage, world: &mut World) -> SceneResult {
-        Scheduler::single(bootstrap.system(world)).run(world)
+    fn update(&mut self, stage: SceneStage, world: &mut World) -> SceneResult {
+        let schedule = self.schedule.get_or_insert_with(|| MouseSchedule {
+            start: Scheduler::single(mouse_start.system(world)),
+            update: Scheduler::single(mouse_update.system(world)),
+        });
+
+        match stage {
+            SceneStage::Start => schedule.start.run(world),
+            SceneStage::Update => schedule.update.run(world),
+            _ => unreachable!(),
+        }
     }
 }
 
-fn bootstrap(mut commands: Commands, assets: Res<AssetServer>) -> SceneResult {
-    let font = assets.load("helvetica.ttf");
-
+fn mouse_start(mut commands: Commands, asset_server: Res<AssetServer>) -> SceneResult {
     commands.insert_resource(ClearColor(Color::BLACK));
-    commands.insert_resource(GameAssets { font: font.clone() });
+
+    let foreground = asset_server.load(Level(0).fg_path());
+    let background = asset_server.load(Level(0).bg_path());
+    let font = asset_server.load("helvetica.ttf");
+
+    commands.insert_resource(GameAssets { 
+        font: font.clone(),
+        background,
+        foreground,
+    });
 
     commands
         .spawn_bundle(NodeBundle {
@@ -75,5 +100,19 @@ fn bootstrap(mut commands: Commands, assets: Res<AssetServer>) -> SceneResult {
             });
         });
 
-    SceneResult::Replace(Box::new(MenuScene::default()), SceneStage::Start)
+    SceneResult::Ok(SceneStage::Update)
+}
+
+fn mouse_update(
+    game_assets: Res<GameAssets>,
+    mut images: ResMut<Assets<Image>>,
+) -> SceneResult {
+    if images.get(&game_assets.foreground).is_some() {
+        if let Some(bg_image) = images.get_mut(&game_assets.background) {
+            bg_image.sampler_descriptor.address_mode_u = AddressMode::Repeat;
+            return SceneResult::Replace(Box::new(MenuScene::default()), SceneStage::Start)
+        }
+    }
+
+    SceneResult::Ok(SceneStage::Update)
 }

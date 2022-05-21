@@ -2,7 +2,6 @@ mod level;
 mod logging;
 mod menu;
 mod mouse;
-mod preload;
 
 use logging::init_logging;
 use mouse::MouseScene;
@@ -14,7 +13,6 @@ use quad::{
 fn main() {
     init_logging(); // TODO Move to quad
 
-    // TODO Nahrat vsechny textury a data dopredu pred zobrazenim menu
     // TODO Prepocitat zoom at odpovida velikost pixelu CRT monitorum
 
     Quad::new(QuadConfig {
