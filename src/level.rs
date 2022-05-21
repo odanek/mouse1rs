@@ -90,9 +90,9 @@ fn level_start(mut commands: Commands, level_assets: Res<LevelAssets>, windows: 
             sprite: Sprite {
                 rect: Some(Rect {
                     min: Vec2::new(0.0, 0.0),
-                    max: Vec2::new(5.0 * 320.0, 192.0),
+                    max: Vec2::new(5.5 * 320.0, 192.0),
                 }),
-                custom_size: Some(Vec2::new(5.0 * 320.0, 192.0)),
+                custom_size: Some(Vec2::new(5.5 * 320.0, 192.0)),
                 ..Default::default()
             },
             ..Default::default()
