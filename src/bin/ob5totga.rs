@@ -6,20 +6,6 @@ use std::{
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
-struct Rgb {
-    pub r: u8,
-    pub g: u8,
-    pub b: u8,
-}
-
-impl Rgb {
-    pub fn new(r: u8, g: u8, b: u8) -> Self {
-        Self { r, g, b }
-    }
-}
-
-#[repr(C)]
-#[derive(Clone, Copy, Debug)]
 struct Rgba {
     pub r: u8,
     pub g: u8,
@@ -27,26 +13,8 @@ struct Rgba {
     pub a: u8,
 }
 
-impl Rgba {
-    const BLACK: Rgba = Rgba {
-        r: 0,
-        g: 0,
-        b: 0,
-        a: 255,
-    };
-
-    pub fn from_rgb(rgb: Rgb, a: u8) -> Self {
-        Self {
-            r: rgb.r,
-            g: rgb.g,
-            b: rgb.b,
-            a,
-        }
-    }
-}
-
 struct Palette {
-    data: Vec<Rgb>,
+    data: Vec<Rgba>,
 }
 
 impl Palette {
@@ -55,17 +23,23 @@ impl Palette {
         let mut reader = BufReader::new(file);
 
         let mut data = Vec::new();
-        for _ in 0..256 {
+        for color_index in 0..256 {
             let mut rgb = [0u8; 3];
             reader.read_exact(&mut rgb)?;
-            data.push(Rgb::new(rgb[0], rgb[1], rgb[2]));
+            let alpha = if color_index == 255 { 0 } else { 255 };
+            data.push(Rgba {
+                r: rgb[0],
+                g: rgb[1],
+                b: rgb[2],
+                a: alpha,
+            });
         }
 
         Ok(Self { data })
     }
 
-    pub fn get(&self, index: usize) -> Rgb {
-        self.data[index]
+    pub fn get(&self, index: u8) -> Rgba {
+        self.data[index as usize]
     }
 }
 
@@ -87,7 +61,7 @@ impl Size {
 
 struct Image {
     size: Size,
-    data: Vec<Rgba>,
+    index: Vec<u8>,
 }
 
 impl Image {
@@ -95,7 +69,6 @@ impl Image {
         path: P,
         size: Size,
         image_count: usize,
-        palette: &Palette,
     ) -> std::io::Result<Vec<Self>> {
         let file = File::open(path)?;
         let mut reader = BufReader::new(file);
@@ -104,23 +77,21 @@ impl Image {
         let count = size.count();
 
         for _ in 0..image_count {
-            let mut data = Vec::new();
-            while data.len() < count {
+            let mut index = Vec::new();
+            while index.len() < count {
                 let mut input = [0u8; 2];
                 reader.read_exact(&mut input)?;
-                let color = palette.get(input[1] as usize);
                 for _ in 0..input[0] {
-                    let alpha = if input[1] == 255 { 0 } else { 255 };
-                    data.push(Rgba::from_rgb(color, alpha));
+                    index.push(input[1]);
                 }
             }
-            result.push(Self { size, data });
+            result.push(Self { size, index });
         }
 
         Ok(result)
     }
 
-    pub fn save_tga<P: AsRef<Path>>(&self, path: P) -> std::io::Result<()> {
+    pub fn save_tga<P: AsRef<Path>>(&self, path: P, palette: &Palette) -> std::io::Result<()> {
         let file = File::create(path)?;
         let mut writer = BufWriter::new(file);
 
@@ -131,9 +102,10 @@ impl Image {
         ];
         writer.write_all(&header)?;
 
-        for row in self.data.chunks(self.size.width as usize).rev() {
-            for rgb in row {
-                let color = [rgb.b, rgb.g, rgb.r, rgb.a];
+        for row in self.index.chunks(self.size.width as usize).rev() {
+            for &color_index in row {
+                let rgba = palette.get(color_index);
+                let color = [rgba.b, rgba.g, rgba.r, rgba.a];
                 writer.write_all(&color)?;
             }
         }
@@ -147,33 +119,80 @@ impl Image {
             .fold(0u32, |width, image| width + image.size.width);
         let size = Size::new(width, images[0].size.height);
         let usize_total_width = size.width as usize;
-        let mut data = vec![Rgba::BLACK; size.count()];
+        let mut index = vec![0u8; size.count()];
 
         let mut left = usize_total_width;
         for image in images {
             let usize_image_width = image.size.width as usize;
             left -= usize_image_width;
             let mut dest = left;
-            for row in image.data.chunks(usize_image_width) {
-                data.splice(dest..(dest + usize_image_width), row.iter().copied());
+            for row in image.index.chunks(usize_image_width) {
+                index.splice(dest..(dest + usize_image_width), row.iter().copied());
                 dest += usize_total_width;
             }
         }
 
-        Image { size, data }
+        Image { size, index }
+    }
+
+    pub fn hit_map(&self) -> HitMap {
+        let size = self.size;
+        let mut map = Vec::with_capacity(size.count());
+        for &color_index in self.index.iter() {
+            map.push(color_index < 16);
+        }
+        HitMap { map }
+    }
+}
+
+struct HitMap {
+    map: Vec<bool>,
+}
+
+impl HitMap {
+    pub fn save<P: AsRef<Path>>(&self, path: P) -> std::io::Result<()> {
+        let file = File::create(path)?;
+        let mut writer = BufWriter::new(file);
+
+        let mut last_hit = self.map[0];
+        let mut count = 1u8;
+
+        for &hit in self.map.iter().skip(1) {
+            if last_hit == hit && count < 255 {
+                count += 1;
+            } else {
+                let data = [count, if last_hit { 1 } else { 0 }];
+                writer.write_all(&data)?;
+                last_hit = hit;
+                count = 1;
+            }
+        }
+
+        let data = [count, if last_hit { 1 } else { 0 }];
+        writer.write_all(&data)?;
+
+        Ok(())
     }
 }
 
 fn main() {
     let palette = Palette::load("assets/vga.pal").expect("Unable to load palette");
-    let images = Image::load_ob5("LEV5.KR3", Size::new(320, 192), 11, &palette)
-        .expect("Unable to load image");
+    let images =
+        Image::load_ob5("LEV4.KR3", Size::new(320, 192), 11).expect("Unable to load image");
+
     let joined = Image::join_horizontal(&images[0..10]);
     joined
-        .save_tga("assets/levels/level4.tga")
+        .save_tga("assets/levels/level3.tga", &palette)
         .expect("Unable to write output file");
+
+    let hit_map = joined.hit_map();
+    hit_map
+        .save("assets/levels/level3.hit")
+        .expect("Unabel to save hit map");
+
     images[10]
-        .save_tga("assets/levels/level4.bcg.tga")
+        .save_tga("assets/levels/level3.bcg.tga", &palette)
         .expect("Unable to save backgroudn");
+
     println!("Done");
 }

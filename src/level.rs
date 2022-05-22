@@ -72,7 +72,7 @@ fn level_start(
     game_assets: Res<GameAssets>,
     level: Res<Level>,
     windows: ResMut<Windows>,
-    mut camera: Query<(&Camera2d, &mut Transform)>
+    mut camera: Query<(&Camera2d, &mut Transform)>,
 ) {
     let window_size = windows.primary().size();
     let zoom = (window_size.height - TITLE_HEIGHT) / SCREEN_HEIGHT;
@@ -116,7 +116,7 @@ fn level_start(
             },
             ..Default::default()
         })
-        .id();        
+        .id();
 
     commands.insert_resource(LevelData {
         camera_position,
