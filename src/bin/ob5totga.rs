@@ -166,14 +166,14 @@ impl Image {
 
 fn main() {
     let palette = Palette::load("assets/vga.pal").expect("Unable to load palette");
-    let images = Image::load_ob5("lev1.kr3", Size::new(320, 192), 11, &palette)
+    let images = Image::load_ob5("LEV5.KR3", Size::new(320, 192), 11, &palette)
         .expect("Unable to load image");
     let joined = Image::join_horizontal(&images[0..10]);
     joined
-        .save_tga("lev1.tga")
+        .save_tga("assets/levels/level4.tga")
         .expect("Unable to write output file");
     images[10]
-        .save_tga("lev1bcg.tga")
+        .save_tga("assets/levels/level4.bcg.tga")
         .expect("Unable to save backgroudn");
     println!("Done");
 }

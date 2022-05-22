@@ -72,9 +72,11 @@ fn level_start(
     game_assets: Res<GameAssets>,
     level: Res<Level>,
     windows: ResMut<Windows>,
+    mut camera: Query<(&Camera2d, &mut Transform)>
 ) {
     let window_size = windows.primary().size();
     let zoom = (window_size.height - TITLE_HEIGHT) / SCREEN_HEIGHT;
+    let camera_position = 500.0;
 
     let background = commands
         .spawn()
@@ -89,6 +91,7 @@ fn level_start(
                 custom_size: Some(Vec2::new(BCG_SCREEN_COUNT * SCREEN_WIDTH, SCREEN_HEIGHT)),
                 ..Default::default()
             },
+            transform: Transform::from_xy(camera_position / 2.0, 0.0),
             ..Default::default()
         })
         .id();
@@ -113,14 +116,18 @@ fn level_start(
             },
             ..Default::default()
         })
-        .id();
+        .id();        
 
     commands.insert_resource(LevelData {
-        camera_position: 500.0,
+        camera_position,
         root,
         zoom,
         quit: false,
     });
+
+    if let Ok((_, mut camera_pos)) = camera.single_mut() {
+        camera_pos.translation.x = camera_position * zoom;
+    }
 }
 
 fn finalize_start() -> SceneResult {

@@ -61,10 +61,10 @@ impl Scene for MouseScene {
 fn mouse_start(mut commands: Commands, asset_server: Res<AssetServer>) -> SceneResult {
     commands.insert_resource(ClearColor(Color::BLACK));
 
-    let foreground = (0..1)
+    let foreground = (0..5)
         .map(|level| asset_server.load(GameAssets::foreground_path(level)))
         .collect();
-    let background = (0..1)
+    let background = (0..5)
         .map(|level| asset_server.load(GameAssets::background_path(level)))
         .collect();
     let font = asset_server.load("helvetica.ttf");
