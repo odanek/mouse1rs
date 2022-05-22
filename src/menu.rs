@@ -11,7 +11,10 @@ use quad::{
     Scene, SceneResult, SceneStage,
 };
 
-use crate::{level::{Level, LevelScene}, mouse::GameAssets};
+use crate::{
+    level::{Level, LevelScene},
+    mouse::GameAssets,
+};
 
 struct MenuSceneSchedule {
     start: Schedule<(), SceneResult>, // TODO Typealias

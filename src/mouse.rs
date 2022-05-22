@@ -1,8 +1,10 @@
+use std::path::PathBuf;
+
 use quad::{
-    asset::{AssetServer, Handle, Assets},
-    ecs::{Commands, IntoSystem, Res, Resource, Scheduler, World, Schedule, ResMut},
+    asset::{AssetServer, Assets, Handle},
+    ecs::{Commands, IntoSystem, Res, ResMut, Resource, Schedule, Scheduler, World},
     pipeline::ClearColor,
-    render::{AddressMode, color::Color, texture::Image},
+    render::{color::Color, texture::Image, AddressMode},
     text::{Font, Text, TextSection, TextStyle},
     ty::Size,
     ui::{
@@ -12,13 +14,23 @@ use quad::{
     Scene, SceneResult, SceneStage,
 };
 
-use crate::{menu::MenuScene, level::Level};
+use crate::menu::MenuScene;
 
 #[derive(Resource)]
 pub struct GameAssets {
     pub font: Handle<Font>,
-    pub background: Handle<Image>,
-    pub foreground: Handle<Image>,
+    pub background: Vec<Handle<Image>>,
+    pub foreground: Vec<Handle<Image>>,
+}
+
+impl GameAssets {
+    pub fn foreground_path(level: u32) -> PathBuf {
+        format!("levels/level{}.tga", level).into()
+    }
+
+    pub fn background_path(level: u32) -> PathBuf {
+        format!("levels/level{}.bcg.tga", level).into()
+    }
 }
 
 pub struct MouseSchedule {
@@ -49,11 +61,15 @@ impl Scene for MouseScene {
 fn mouse_start(mut commands: Commands, asset_server: Res<AssetServer>) -> SceneResult {
     commands.insert_resource(ClearColor(Color::BLACK));
 
-    let foreground = asset_server.load(Level(0).fg_path());
-    let background = asset_server.load(Level(0).bg_path());
+    let foreground = (0..1)
+        .map(|level| asset_server.load(GameAssets::foreground_path(level)))
+        .collect();
+    let background = (0..1)
+        .map(|level| asset_server.load(GameAssets::background_path(level)))
+        .collect();
     let font = asset_server.load("helvetica.ttf");
 
-    commands.insert_resource(GameAssets { 
+    commands.insert_resource(GameAssets {
         font: font.clone(),
         background,
         foreground,
@@ -103,16 +119,23 @@ fn mouse_start(mut commands: Commands, asset_server: Res<AssetServer>) -> SceneR
     SceneResult::Ok(SceneStage::Update)
 }
 
-fn mouse_update(
-    game_assets: Res<GameAssets>,
-    mut images: ResMut<Assets<Image>>,
-) -> SceneResult {
-    if images.get(&game_assets.foreground).is_some() {
-        if let Some(bg_image) = images.get_mut(&game_assets.background) {
-            bg_image.sampler_descriptor.address_mode_u = AddressMode::Repeat;
-            return SceneResult::Replace(Box::new(MenuScene::default()), SceneStage::Start)
-        }
-    }
+fn mouse_update(game_assets: Res<GameAssets>, mut images: ResMut<Assets<Image>>) -> SceneResult {
+    let all_fg_loaded = game_assets
+        .foreground
+        .iter()
+        .all(|handle| images.contains(handle));
+    let all_bcg_loaded = game_assets
+        .background
+        .iter()
+        .all(|handle| images.contains(handle));
 
-    SceneResult::Ok(SceneStage::Update)
+    if all_fg_loaded && all_bcg_loaded {
+        for handle in game_assets.background.iter() {
+            let mut image = images.get_mut(handle).unwrap();
+            image.sampler_descriptor.address_mode_u = AddressMode::Repeat;
+        }
+        SceneResult::Replace(Box::new(MenuScene::default()), SceneStage::Start)
+    } else {
+        SceneResult::Ok(SceneStage::Update)
+    }
 }

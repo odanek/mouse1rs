@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use quad::{
     ecs::{Commands, Component, Entity, Query, Res, ResMut, Resource, Schedule, Scheduler, World},
     input::{KeyCode, KeyboardInput},
@@ -14,21 +12,17 @@ use quad::{
 
 use crate::mouse::GameAssets;
 
+const TITLE_HEIGHT: f32 = 30.0;
+const SCREEN_WIDTH: f32 = 320.0;
+const SCREEN_HEIGHT: f32 = 192.0;
+const SCREEN_COUNT: f32 = 10.0;
+const BCG_SCREEN_COUNT: f32 = SCREEN_COUNT / 2.0 + 0.5;
+
 #[derive(Resource)]
-pub struct Level(pub u32);
+pub struct Level(pub usize);
 
 #[derive(Component)]
 pub struct BackgroundImage;
-
-impl Level {
-    pub fn fg_path(&self) -> PathBuf {
-        format!("levels/level{}.tga", self.0 + 1).into()
-    }
-
-    pub fn bg_path(&self) -> PathBuf {
-        format!("levels/level{}.bcg.tga", self.0 + 1).into()
-    }
-}
 
 #[derive(Resource)]
 struct LevelData {
@@ -73,21 +67,26 @@ impl Scene for LevelScene {
     }
 }
 
-fn level_start(mut commands: Commands, game_assets: Res<GameAssets>, windows: ResMut<Windows>) {
+fn level_start(
+    mut commands: Commands,
+    game_assets: Res<GameAssets>,
+    level: Res<Level>,
+    windows: ResMut<Windows>,
+) {
     let window_size = windows.primary().size();
-    let zoom = (window_size.height - 30.0) / 192.0;
+    let zoom = (window_size.height - TITLE_HEIGHT) / SCREEN_HEIGHT;
 
     let background = commands
         .spawn()
         .insert(BackgroundImage)
         .insert_bundle(SpriteBundle {
-            texture: game_assets.background.clone(),
+            texture: game_assets.background[level.0].clone(),
             sprite: Sprite {
                 rect: Some(Rect {
                     min: Vec2::new(0.0, 0.0),
-                    max: Vec2::new(5.5 * 320.0, 192.0),
+                    max: Vec2::new(BCG_SCREEN_COUNT * SCREEN_WIDTH, SCREEN_HEIGHT),
                 }),
-                custom_size: Some(Vec2::new(5.5 * 320.0, 192.0)),
+                custom_size: Some(Vec2::new(BCG_SCREEN_COUNT * SCREEN_WIDTH, SCREEN_HEIGHT)),
                 ..Default::default()
             },
             ..Default::default()
@@ -97,7 +96,7 @@ fn level_start(mut commands: Commands, game_assets: Res<GameAssets>, windows: Re
     let foreground = commands
         .spawn()
         .insert_bundle(SpriteBundle {
-            texture: game_assets.foreground.clone(),
+            texture: game_assets.foreground[level.0].clone(),
             transform: Transform::from_xyz(0.0, 0.0, 1.0),
             ..Default::default()
         })
@@ -109,7 +108,7 @@ fn level_start(mut commands: Commands, game_assets: Res<GameAssets>, windows: Re
         .insert_bundle(TransformBundle {
             local: Transform {
                 scale: Vec3::new(zoom, zoom, 1.0),
-                translation: Vec3::new(0.0, -15.0, 0.0),
+                translation: Vec3::new(0.0, -TITLE_HEIGHT / 2.0, 0.0),
                 ..Default::default()
             },
             ..Default::default()
