@@ -2,12 +2,12 @@ use quad::{
     ecs::{Commands, Component, Entity, Query, Res, ResMut, Resource, Schedule, Scheduler, World},
     input::{KeyCode, KeyboardInput},
     render::cameras::Camera2d,
+    run::{Scene, SceneResult, SceneStage},
     sprite::{Rect, Sprite, SpriteBundle},
     timing::Time,
     transform::{Transform, TransformBundle},
     ty::{Vec2, Vec3},
     windowing::Windows,
-    Scene, SceneResult, SceneStage,
 };
 
 use crate::mouse::GameAssets;
@@ -76,7 +76,7 @@ fn level_start(
 ) {
     let window_size = windows.primary().size();
     let zoom = (window_size.height - TITLE_HEIGHT) / SCREEN_HEIGHT;
-    let camera_position = 500.0;
+    let camera_position = SCREEN_WIDTH * SCREEN_COUNT / 2.0 - SCREEN_WIDTH / 2.0;
 
     let background = commands
         .spawn()

@@ -5,13 +5,13 @@ use quad::{
     ecs::{Commands, IntoSystem, Res, ResMut, Resource, Schedule, Scheduler, World},
     pipeline::ClearColor,
     render::{color::Color, texture::Image, AddressMode},
+    run::{Scene, SceneResult, SceneStage},
     text::{Font, Text, TextSection, TextStyle},
     ty::Size,
     ui::{
         entity::{NodeBundle, UiTextBundle},
         AlignItems, FlexDirection, JustifyContent, PositionType, Style, Val,
     },
-    Scene, SceneResult, SceneStage,
 };
 
 use crate::menu::MenuScene;
