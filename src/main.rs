@@ -1,7 +1,9 @@
+mod hit_map;
 mod level;
 mod menu;
 mod mouse;
 
+use hit_map::{HitMap, HitMapLoader};
 use mouse::MouseScene;
 use quad::{
     run::{Quad, QuadConfig},
@@ -22,5 +24,7 @@ fn main() {
         },
         ..Default::default()
     })
+    .add_asset::<HitMap>()
+    .init_asset_loader::<HitMapLoader>()
     .run(Box::new(MouseScene::default()));
 }

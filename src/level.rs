@@ -1,7 +1,10 @@
+use std::path::PathBuf;
+
 use quad::{
+    asset::Handle,
     ecs::{Commands, Component, Entity, Query, Res, ResMut, Resource, Schedule, Scheduler, World},
     input::{KeyCode, KeyboardInput},
-    render::cameras::Camera2d,
+    render::{cameras::Camera2d, texture::Image},
     run::{Scene, SceneResult, SceneStage},
     sprite::{Rect, Sprite, SpriteBundle},
     timing::Time,
@@ -10,7 +13,7 @@ use quad::{
     windowing::Windows,
 };
 
-use crate::mouse::GameAssets;
+use crate::{hit_map::HitMap, mouse::GameAssets};
 
 const TITLE_HEIGHT: f32 = 30.0;
 const SCREEN_WIDTH: f32 = 320.0;
@@ -20,6 +23,26 @@ const BCG_SCREEN_COUNT: f32 = SCREEN_COUNT / 2.0 + 0.5;
 
 #[derive(Resource)]
 pub struct Level(pub usize);
+
+pub struct LevelAssets {
+    pub background: Handle<Image>,
+    pub foreground: Handle<Image>,
+    pub hit_map: Handle<HitMap>,
+}
+
+impl LevelAssets {
+    pub fn foreground_path(level: u32) -> PathBuf {
+        format!("levels/{}/fg.tga", level).into()
+    }
+
+    pub fn background_path(level: u32) -> PathBuf {
+        format!("levels/{}/bcg.tga", level).into()
+    }
+
+    pub fn hit_map_path(level: u32) -> PathBuf {
+        format!("levels/{}/map.hit", level).into()
+    }
+}
 
 #[derive(Component)]
 pub struct BackgroundImage;
@@ -82,7 +105,7 @@ fn level_start(
         .spawn()
         .insert(BackgroundImage)
         .insert_bundle(SpriteBundle {
-            texture: game_assets.background[level.0].clone(),
+            texture: game_assets.level[level.0].background.clone(),
             sprite: Sprite {
                 rect: Some(Rect {
                     min: Vec2::new(0.0, 0.0),
@@ -99,7 +122,7 @@ fn level_start(
     let foreground = commands
         .spawn()
         .insert_bundle(SpriteBundle {
-            texture: game_assets.foreground[level.0].clone(),
+            texture: game_assets.level[level.0].foreground.clone(),
             transform: Transform::from_xyz(0.0, 0.0, 1.0),
             ..Default::default()
         })
