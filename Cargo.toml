@@ -20,4 +20,3 @@ log = "0.4.14"
 cgm = { path = "../cgm" }
 quad = { path = "../quad" }
 anyhow = "1.0.57"
-uuid = { version = "1.0.0-alpha.1", features = ["v4"] }

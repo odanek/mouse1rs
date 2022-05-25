@@ -180,18 +180,19 @@ fn main() {
     let images =
         Image::load_ob5("LEV4.KR3", Size::new(320, 192), 11).expect("Unable to load image");
 
+    let level_path = format!("assets/levels/{}", 0);
     let joined = Image::join_horizontal(&images[0..10]);
     joined
-        .save_tga("assets/levels/level3.tga", &palette)
+        .save_tga(format!("{}/fg.tga", level_path), &palette)
         .expect("Unable to write output file");
 
     let hit_map = joined.hit_map();
     hit_map
-        .save("assets/levels/level3.hit")
+        .save(format!("{}/map.hit", level_path))
         .expect("Unabel to save hit map");
 
     images[10]
-        .save_tga("assets/levels/level3.bcg.tga", &palette)
+        .save_tga(format!("{}/bcg.tga", level_path), &palette)
         .expect("Unable to save backgroudn");
 
     println!("Done");
