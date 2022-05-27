@@ -47,6 +47,9 @@ impl LevelAssets {
 #[derive(Component)]
 pub struct BackgroundImage;
 
+#[derive(Component)]
+pub struct SceneRoot;
+
 #[derive(Resource)]
 struct LevelData {
     camera_position: f32,
@@ -70,12 +73,11 @@ impl Scene for LevelScene {
         let schedule = self.schedule.get_or_insert_with(|| LevelSchedule {
             start: Scheduler::chain(world)
                 .add(level_start)
-                // .add(position_camera)  // TODO How to fix?
-                // .add(position_background)
                 .add(finalize_start)
                 .build(),
             update: Scheduler::chain(world)
                 .add(&handle_input)
+                .add(&update_zoom)
                 .add(&position_camera)
                 .add(&position_background)
                 .add(&finalize_update)
@@ -94,7 +96,7 @@ fn level_start(
     mut commands: Commands,
     game_assets: Res<GameAssets>,
     level: Res<Level>,
-    windows: ResMut<Windows>,
+    windows: Res<Windows>,
     mut camera: Query<(&Camera2d, &mut Transform)>,
 ) {
     let window_size = windows.primary().size();
@@ -140,6 +142,7 @@ fn level_start(
     let root = commands
         .spawn()
         .push_children(&[foreground, background, player])
+        .insert(SceneRoot)
         .insert_bundle(TransformBundle {
             local: Transform {
                 scale: Vec3::new(zoom, zoom, 1.0),
@@ -175,6 +178,22 @@ fn handle_input(time: Res<Time>, mut level_data: ResMut<LevelData>, keyboard: Re
 
     if keyboard.just_pressed(KeyCode::Escape) {
         level_data.quit = true;
+    }
+}
+
+fn update_zoom(
+    windows: Res<Windows>,
+    mut level_data: ResMut<LevelData>,
+    mut root: Query<(&SceneRoot, &mut Transform)>,
+) {
+    let window_size = windows.primary().size();
+    let zoom = (window_size.height - TITLE_HEIGHT) / SCREEN_HEIGHT;
+
+    level_data.zoom = zoom;
+
+    if let Ok((_, mut root_pos)) = root.single_mut() {
+        root_pos.scale.x = zoom;
+        root_pos.scale.y = zoom;
     }
 }
 
