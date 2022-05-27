@@ -18,15 +18,19 @@ struct Palette {
 }
 
 impl Palette {
-    fn load<P: AsRef<Path>>(path: P) -> std::io::Result<Self> {
+    fn load<P: AsRef<Path>>(path: P, transparent_index: u8) -> std::io::Result<Self> {
         let file = File::open(path)?;
         let mut reader = BufReader::new(file);
 
         let mut data = Vec::new();
-        for color_index in 0..256 {
+        for color_index in 0..=255u8 {
             let mut rgb = [0u8; 3];
             reader.read_exact(&mut rgb)?;
-            let alpha = if color_index == 255 { 0 } else { 255 };
+            let alpha = if color_index == transparent_index {
+                0
+            } else {
+                255
+            };
             data.push(Rgba {
                 r: rgb[0],
                 g: rgb[1],
@@ -84,6 +88,30 @@ impl Image {
                 for _ in 0..input[0] {
                     index.push(input[1]);
                 }
+            }
+            result.push(Self { size, index });
+        }
+
+        Ok(result)
+    }
+
+    pub fn load_art<P: AsRef<Path>>(
+        path: P,
+        size: Size,
+        image_count: usize,
+    ) -> std::io::Result<Vec<Self>> {
+        let file = File::open(path)?;
+        let mut reader = BufReader::new(file);
+
+        let mut result = Vec::new();
+        let count = size.count();
+
+        for _ in 0..image_count {
+            let mut index = Vec::new();
+            for _ in 0..count {
+                let mut color = [0u8];
+                reader.read_exact(&mut color)?;
+                index.push(color[0]);
             }
             result.push(Self { size, index });
         }
@@ -175,12 +203,13 @@ impl HitMap {
     }
 }
 
-fn main() {
-    let palette = Palette::load("assets/vga.pal").expect("Unable to load palette");
+fn convert_level(index: u32) {
+    let palette = Palette::load("assets/vga.pal", 255).expect("Unable to load palette");
+    let input_path = format!("LEV{}.KR3", index + 1);
     let images =
-        Image::load_ob5("LEV4.KR3", Size::new(320, 192), 11).expect("Unable to load image");
+        Image::load_ob5(input_path, Size::new(320, 192), 11).expect("Unable to load image");
 
-    let level_path = format!("assets/levels/{}", 0);
+    let level_path = format!("assets/levels/{}", index);
     let joined = Image::join_horizontal(&images[0..10]);
     joined
         .save_tga(format!("{}/fg.tga", level_path), &palette)
@@ -194,6 +223,21 @@ fn main() {
     images[10]
         .save_tga(format!("{}/bcg.tga", level_path), &palette)
         .expect("Unable to save backgroudn");
+}
 
+fn convert_player() {
+    let palette = Palette::load("assets/vga.pal", 0).expect("Unable to load palette");
+    let images =
+        Image::load_art("MOUSE1.ART", Size::new(10, 16), 18).expect("Unable to load image");
+
+    let joined = Image::join_horizontal(&images);
+    joined
+        .save_tga("assets/player.tga", &palette)
+        .expect("Unable to write output file");
+}
+
+fn main() {
+    convert_level(0);
+    convert_player();
     println!("Done");
 }
