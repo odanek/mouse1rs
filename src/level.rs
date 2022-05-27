@@ -6,7 +6,7 @@ use quad::{
     input::{KeyCode, KeyboardInput},
     render::{cameras::Camera2d, texture::Image},
     run::{Scene, SceneResult, SceneStage},
-    sprite::{Rect, Sprite, SpriteBundle},
+    sprite::{Rect, Sprite, SpriteBundle, SpriteSheetBundle},
     timing::Time,
     transform::{Transform, TransformBundle},
     ty::{Vec2, Vec3},
@@ -128,9 +128,18 @@ fn level_start(
         })
         .id();
 
+    let player = commands
+        .spawn()
+        .insert_bundle(SpriteSheetBundle {
+            texture_atlas: game_assets.player.clone(),
+            transform: Transform::from_xyz(0.0, 0.0, 2.0),
+            ..Default::default()
+        })
+        .id();
+
     let root = commands
         .spawn()
-        .push_children(&[foreground, background])
+        .push_children(&[foreground, background, player])
         .insert_bundle(TransformBundle {
             local: Transform {
                 scale: Vec3::new(zoom, zoom, 1.0),

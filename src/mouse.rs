@@ -4,8 +4,9 @@ use quad::{
     pipeline::ClearColor,
     render::{color::Color, texture::Image, AddressMode},
     run::{Scene, SceneResult, SceneStage},
+    sprite::TextureAtlas,
     text::{Font, Text, TextSection, TextStyle},
-    ty::Size,
+    ty::{Size, Vec2},
     ui::{
         entity::{NodeBundle, UiTextBundle},
         AlignItems, FlexDirection, JustifyContent, PositionType, Style, Val,
@@ -18,6 +19,7 @@ use crate::{hit_map::HitMap, level::LevelAssets, menu::MenuScene};
 pub struct GameAssets {
     pub font: Handle<Font>,
     pub level: Vec<LevelAssets>,
+    pub player: Handle<TextureAtlas>,
 }
 
 pub struct MouseSchedule {
@@ -45,7 +47,11 @@ impl Scene for MouseScene {
     }
 }
 
-fn mouse_start(mut commands: Commands, asset_server: Res<AssetServer>) -> SceneResult {
+fn mouse_start(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+) -> SceneResult {
     commands.insert_resource(ClearColor(Color::BLACK));
 
     let font = asset_server.load("helvetica.ttf");
@@ -57,9 +63,18 @@ fn mouse_start(mut commands: Commands, asset_server: Res<AssetServer>) -> SceneR
         })
         .collect();
 
+    let player_image = asset_server.load("player.tga");
+    let player = texture_atlases.add(TextureAtlas::from_grid(
+        player_image,
+        Vec2::new(10.0, 16.0),
+        18,
+        1,
+    ));
+
     commands.insert_resource(GameAssets {
         font: font.clone(),
         level,
+        player,
     });
 
     commands
@@ -109,6 +124,7 @@ fn mouse_start(mut commands: Commands, asset_server: Res<AssetServer>) -> SceneR
 fn mouse_update(
     game_assets: Res<GameAssets>,
     mut images: ResMut<Assets<Image>>,
+    texture_atlases: Res<Assets<TextureAtlas>>,
     hit_maps: Res<Assets<HitMap>>,
 ) -> SceneResult {
     let levels_loaded = game_assets.level.iter().all(|level| {
@@ -116,8 +132,10 @@ fn mouse_update(
             && images.contains(&level.background)
             && hit_maps.contains(&level.hit_map)
     });
+    let player_image_handle = &texture_atlases.get(&game_assets.player).unwrap().texture;
+    let player_loaded = images.contains(player_image_handle);
 
-    if levels_loaded {
+    if levels_loaded && player_loaded {
         for level in game_assets.level.iter() {
             let mut image = images.get_mut(&level.background).unwrap();
             image.sampler_descriptor.address_mode_u = AddressMode::Repeat;
