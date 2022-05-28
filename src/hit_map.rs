@@ -2,7 +2,7 @@ use std::iter::repeat;
 
 use quad::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
-    ty::{BoxedFuture, Vec2},
+    ty::{BoxedFuture},
 };
 
 pub struct HitMap {
@@ -12,15 +12,13 @@ pub struct HitMap {
 impl HitMap {
     pub fn from_rle_bytes(bytes: &[u8]) -> Self {
         let mut map = Vec::with_capacity(320 * 192 * 10);
-        let mut count = 0;
         for rle in bytes.chunks(2) {
             map.extend(repeat(rle[1]).take(rle[0] as usize));
-            count += rle[0] as usize;
         }
         Self { map }
     }
 
-    pub fn check_collision(position: Vec2) -> bool {
+    pub fn check_collision(&self, x: f32, y: f32) -> bool {
         false
     }
 }

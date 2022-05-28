@@ -28,14 +28,20 @@ pub struct Player {
 impl Player {
     pub fn move_left(&mut self, time: &Time, hit_map: &HitMap) {
         self.orientation = PlayerOrientation::Left;
-        self.position.x -= UPDATE_SPEED * time.delta_seconds();
-        self.animate(time);
+        let x = self.position.x - UPDATE_SPEED * time.delta_seconds();
+        if !hit_map.check_collision(x, self.position.y) || x > 0.0 {
+            self.position.x = x;
+            self.animate(time);    
+        }
     }
 
     pub fn move_right(&mut self, time: &Time, hit_map: &HitMap) {
         self.orientation = PlayerOrientation::Right;
-        self.position.x += UPDATE_SPEED * time.delta_seconds();
-        self.animate(time);
+        let x = self.position.x + UPDATE_SPEED * time.delta_seconds();        
+        if !hit_map.check_collision(x, self.position.y) && x < 3180.0 {
+            self.position.x = x;
+            self.animate(time);    
+        }
     }
 
     pub fn sprite_index(&self) -> usize {
