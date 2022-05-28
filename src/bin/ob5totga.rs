@@ -167,14 +167,22 @@ impl Image {
         let size = self.size;
         let mut map = Vec::with_capacity(size.count());
         for &color_index in self.index.iter() {
-            map.push(color_index < 16);
+            if color_index < 16 {
+                map.push(1);
+            } else if color_index == 53 {
+                map.push(2);
+            } else if color_index == 43 {
+                map.push(3);
+            } else {
+                map.push(0);
+            }
         }
         HitMap { map }
     }
 }
 
 struct HitMap {
-    map: Vec<bool>,
+    map: Vec<u8>,
 }
 
 impl HitMap {
@@ -189,14 +197,14 @@ impl HitMap {
             if last_hit == hit && count < 255 {
                 count += 1;
             } else {
-                let data = [count, if last_hit { 1 } else { 0 }];
+                let data = [count, last_hit];
                 writer.write_all(&data)?;
                 last_hit = hit;
                 count = 1;
             }
         }
 
-        let data = [count, if last_hit { 1 } else { 0 }];
+        let data = [count, last_hit];
         writer.write_all(&data)?;
 
         Ok(())
