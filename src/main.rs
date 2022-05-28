@@ -1,7 +1,9 @@
+mod constant;
 mod hit_map;
 mod level;
 mod menu;
 mod mouse;
+mod player;
 
 use hit_map::{HitMap, HitMapLoader};
 use mouse::MouseScene;
@@ -11,8 +13,6 @@ use quad::{
 };
 
 fn main() {
-    // TODO Prepocitat zoom at odpovida velikost pixelu CRT monitorum
-
     Quad::new(QuadConfig {
         main_window: WindowDescriptor {
             title: "The Mouse 1".to_string(),

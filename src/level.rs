@@ -1,25 +1,24 @@
 use std::path::PathBuf;
 
 use quad::{
-    asset::Handle,
+    asset::{Assets, Handle},
     ecs::{Commands, Component, Entity, Query, Res, ResMut, Resource, Schedule, Scheduler, World},
     input::{KeyCode, KeyboardInput},
     render::{cameras::Camera2d, texture::Image},
     run::{Scene, SceneResult, SceneStage},
-    sprite::{Rect, Sprite, SpriteBundle, SpriteSheetBundle},
+    sprite::{Rect, Sprite, SpriteBundle, SpriteSheetBundle, TextureAtlasSprite},
     timing::Time,
     transform::{Transform, TransformBundle},
     ty::{Vec2, Vec3},
     windowing::Windows,
 };
 
-use crate::{hit_map::HitMap, mouse::GameAssets};
-
-const TITLE_HEIGHT: f32 = 30.0;
-const SCREEN_WIDTH: f32 = 320.0;
-const SCREEN_HEIGHT: f32 = 192.0;
-const SCREEN_COUNT: f32 = 10.0;
-const BCG_SCREEN_COUNT: f32 = SCREEN_COUNT / 2.0 + 0.5;
+use crate::{
+    constant::*,
+    hit_map::HitMap,
+    mouse::GameAssets,
+    player::{Player, PlayerOrientation, PlayerState},
+};
 
 #[derive(Resource)]
 pub struct Level(pub usize);
@@ -77,6 +76,7 @@ impl Scene for LevelScene {
                 .build(),
             update: Scheduler::chain(world)
                 .add(&handle_input)
+                .add(&update_player)
                 .add(&update_zoom)
                 .add(&position_camera)
                 .add(&position_background)
@@ -101,7 +101,7 @@ fn level_start(
 ) {
     let window_size = windows.primary().size();
     let zoom = (window_size.height - TITLE_HEIGHT) / SCREEN_HEIGHT;
-    let camera_position = SCREEN_WIDTH * SCREEN_COUNT / 2.0 - SCREEN_WIDTH / 2.0;
+    let camera_position = 0.0; //SCREEN_WIDTH * SCREEN_COUNT / 2.0 - SCREEN_WIDTH / 2.0;
 
     let background = commands
         .spawn()
@@ -137,6 +137,13 @@ fn level_start(
             transform: Transform::from_xyz(0.0, 0.0, 2.0),
             ..Default::default()
         })
+        .insert(Player {
+            orientation: PlayerOrientation::Left,
+            state: PlayerState::Standing,
+            position: Vec2::new(0.0, 0.0),
+            jump_phase: 0.0,
+            animation_phase: 0.0,
+        })
         .id();
 
     let root = commands
@@ -169,13 +176,31 @@ fn finalize_start() -> SceneResult {
     SceneResult::Ok(SceneStage::Update)
 }
 
-fn handle_input(time: Res<Time>, mut level_data: ResMut<LevelData>, keyboard: Res<KeyboardInput>) {
+fn update_player(
+    time: Res<Time>,
+    keyboard: Res<KeyboardInput>,
+    game_assets: Res<GameAssets>,
+    level: Res<Level>,
+    hit_map_assets: Res<Assets<HitMap>>,
+    mut player_query: Query<(&mut Player, &mut Transform, &mut TextureAtlasSprite)>,
+) {
+    let (mut player, mut transform, mut sprite) = player_query.single_mut().unwrap();
+    let hit_map = hit_map_assets
+        .get(&game_assets.level[level.0].hit_map)
+        .unwrap();
+
     if keyboard.pressed(KeyCode::Left) {
-        level_data.camera_position -= 200.0 * time.delta_seconds();
+        player.move_left(time.as_ref(), hit_map)
     } else if keyboard.pressed(KeyCode::Right) {
-        level_data.camera_position += 200.0 * time.delta_seconds();
+        player.move_right(time.as_ref(), hit_map)
     }
 
+    transform.translation.x = player.position.x;
+    transform.translation.y = player.position.y;
+    sprite.index = player.sprite_index();
+}
+
+fn handle_input(mut level_data: ResMut<LevelData>, keyboard: Res<KeyboardInput>) {
     if keyboard.just_pressed(KeyCode::Escape) {
         level_data.quit = true;
     }

@@ -1,10 +1,16 @@
 use quad::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
-    ty::BoxedFuture,
+    ty::{BoxedFuture, Vec2},
 };
 
 pub struct HitMap {
     map: Vec<u8>,
+}
+
+impl HitMap {
+    pub fn check_collision(position: Vec2) -> bool {
+        false
+    }
 }
 
 #[derive(Default)]
