@@ -17,7 +17,6 @@ impl HitMap {
             map.extend(repeat(rle[1]).take(rle[0] as usize));
             count += rle[0] as usize;
         }
-        println!("Loaded {}", count);
         Self { map }
     }
 
