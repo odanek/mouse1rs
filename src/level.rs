@@ -9,7 +9,7 @@ use quad::{
     sprite::{Rect, Sprite, SpriteBundle, SpriteSheetBundle, TextureAtlasSprite},
     timing::Time,
     transform::{Transform, TransformBundle},
-    ty::{Vec2, Vec3},
+    ty::{Size, Vec2, Vec3},
     windowing::Windows,
 };
 
@@ -52,6 +52,8 @@ pub struct SceneRoot;
 #[derive(Resource)]
 struct LevelData {
     camera_position: f32,
+    camera_max: f32,
+    camera_min: f32,
     root: Entity,
     zoom: f32,
     quit: bool,
@@ -105,8 +107,6 @@ fn level_start(
         .get(&game_assets.level[level.0].hit_map)
         .unwrap();
 
-    let zoom = (window_size.height - TITLE_HEIGHT) / SCREEN_HEIGHT;
-
     let player_position = Vec2::new(3180.0, 50.0);
     let player = Player {
         orientation: PlayerOrientation::Left,
@@ -120,7 +120,8 @@ fn level_start(
         animation_phase: 0.0,
     };
 
-    let camera_position = TOTAL_SCREEN_WIDTH / 2.0 - SCREEN_WIDTH / 2.0;
+    let (zoom, camera_min, camera_max) = camera_properties(window_size);
+    let camera_position = camera_max;
 
     let background = commands
         .spawn()
@@ -183,6 +184,8 @@ fn level_start(
 
     commands.insert_resource(LevelData {
         camera_position,
+        camera_min,
+        camera_max,
         root,
         zoom,
         quit: false,
@@ -247,8 +250,11 @@ fn update_zoom(
     mut root: Query<(&SceneRoot, &mut Transform)>,
 ) {
     let window_size = windows.primary().size();
-    let zoom = (window_size.height - TITLE_HEIGHT) / SCREEN_HEIGHT;
+    let (zoom, camera_min, camera_max) = camera_properties(window_size);
 
+    level_data.camera_min = camera_min;
+    level_data.camera_max = camera_max;
+    level_data.camera_position = level_data.camera_position.max(camera_min).min(camera_max);
     level_data.zoom = zoom;
 
     if let Ok((_, mut root_pos)) = root.single_mut() {
@@ -257,10 +263,22 @@ fn update_zoom(
     }
 }
 
-fn position_camera(level_data: Res<LevelData>, mut camera: Query<(&Camera2d, &mut Transform)>) {
-    if let Ok((_, mut camera_pos)) = camera.single_mut() {
-        camera_pos.translation.x = level_data.camera_position * level_data.zoom;
-    }
+fn position_camera(
+    mut level_data: ResMut<LevelData>,
+    player_query: Query<&Player>,
+    mut camera_query: Query<(&Camera2d, &mut Transform)>,
+) {
+    let player = player_query.single().unwrap();
+    let player_x = player.position.x + PLAYER_X_OFFSET;
+    level_data.camera_position = level_data
+        .camera_position
+        .min(player_x + 40.0)
+        .max(player_x - 40.0)
+        .max(level_data.camera_min)
+        .min(level_data.camera_max);
+
+    let (_, mut camera_pos) = camera_query.single_mut().unwrap();
+    camera_pos.translation.x = level_data.camera_position * level_data.zoom;
 }
 
 fn position_background(
@@ -281,4 +299,12 @@ fn finalize_update(mut commands: Commands, level_data: ResMut<LevelData>) -> Sce
     } else {
         SceneResult::Ok(SceneStage::Update)
     }
+}
+
+fn camera_properties(window_size: Size) -> (f32, f32, f32) {
+    let zoom = (window_size.height - TITLE_HEIGHT) / SCREEN_HEIGHT;
+    let aspect = window_size.width / (window_size.height - TITLE_HEIGHT);
+    let camera_max = (TOTAL_SCREEN_WIDTH - SCREEN_HEIGHT * aspect) / 2.0;
+    let camera_min = (-TOTAL_SCREEN_WIDTH + SCREEN_HEIGHT * aspect) / 2.0;
+    (zoom, camera_min, camera_max)
 }
