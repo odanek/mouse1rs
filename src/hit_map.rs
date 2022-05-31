@@ -2,7 +2,7 @@ use std::iter::repeat;
 
 use quad::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
-    ty::{BoxedFuture},
+    ty::BoxedFuture,
 };
 
 const ROW_PIXEL_COUNT: usize = 320 * 10;
@@ -21,7 +21,7 @@ impl HitMap {
     }
 
     pub fn check_collision(&self, x: f32, y: f32) -> bool {
-        if x + 0.5 < 0.0 || y + 0.5 < 0.0 {            
+        if x + 0.5 < 0.0 || y + 0.5 < 0.0 {
             return true;
         }
 

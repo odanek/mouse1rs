@@ -31,16 +31,16 @@ impl Player {
         let x = self.position.x - UPDATE_SPEED * time.delta_seconds();
         if !hit_map.check_collision(x, self.position.y) {
             self.position.x = x;
-            self.animate(time);    
+            self.animate(time);
         }
     }
 
     pub fn move_right(&mut self, time: &Time, hit_map: &HitMap) {
         self.orientation = PlayerOrientation::Right;
-        let x = self.position.x + UPDATE_SPEED * time.delta_seconds();        
+        let x = self.position.x + UPDATE_SPEED * time.delta_seconds();
         if !hit_map.check_collision(x, self.position.y) {
             self.position.x = x;
-            self.animate(time);    
+            self.animate(time);
         }
     }
 
