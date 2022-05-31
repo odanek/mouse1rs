@@ -101,7 +101,16 @@ fn level_start(
 ) {
     let window_size = windows.primary().size();
     let zoom = (window_size.height - TITLE_HEIGHT) / SCREEN_HEIGHT;
-    let camera_position = 0.0; //SCREEN_WIDTH * SCREEN_COUNT / 2.0 - SCREEN_WIDTH / 2.0;
+
+    let player = Player {
+        orientation: PlayerOrientation::Left,
+        state: PlayerState::Standing,
+        position: Vec2::new(SCREEN_WIDTH * (SCREEN_COUNT - 0.5), 100.0),
+        jump_phase: 0.0,
+        animation_phase: 0.0,
+    };
+
+    let camera_position = SCREEN_WIDTH * SCREEN_COUNT / 2.0 - SCREEN_WIDTH / 2.0;
 
     let background = commands
         .spawn()
@@ -134,16 +143,14 @@ fn level_start(
         .spawn()
         .insert_bundle(SpriteSheetBundle {
             texture_atlas: game_assets.player.clone(),
-            transform: Transform::from_xyz(0.0, 0.0, 2.0),
+            transform: Transform::from_xyz(
+                player.position.x + PLAYER_X_OFFSET,
+                PLAYER_Y_OFFSET - player.position.y,
+                2.0,
+            ),
             ..Default::default()
         })
-        .insert(Player {
-            orientation: PlayerOrientation::Left,
-            state: PlayerState::Standing,
-            position: Vec2::new(0.0, 0.0),
-            jump_phase: 0.0,
-            animation_phase: 0.0,
-        })
+        .insert(player)
         .id();
 
     let root = commands
@@ -195,8 +202,8 @@ fn update_player(
         player.move_right(time.as_ref(), hit_map)
     }
 
-    transform.translation.x = player.position.x;
-    transform.translation.y = player.position.y;
+    transform.translation.x = player.position.x + PLAYER_X_OFFSET;
+    transform.translation.y = PLAYER_Y_OFFSET - player.position.y;
     sprite.index = player.sprite_index();
 }
 

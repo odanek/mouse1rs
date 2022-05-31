@@ -29,7 +29,7 @@ impl Player {
     pub fn move_left(&mut self, time: &Time, hit_map: &HitMap) {
         self.orientation = PlayerOrientation::Left;
         let x = self.position.x - UPDATE_SPEED * time.delta_seconds();
-        if !hit_map.check_collision(x, self.position.y) || x > 0.0 {
+        if !hit_map.check_collision(x, self.position.y) {
             self.position.x = x;
             self.animate(time);    
         }
@@ -38,7 +38,7 @@ impl Player {
     pub fn move_right(&mut self, time: &Time, hit_map: &HitMap) {
         self.orientation = PlayerOrientation::Right;
         let x = self.position.x + UPDATE_SPEED * time.delta_seconds();        
-        if !hit_map.check_collision(x, self.position.y) && x < 3180.0 {
+        if !hit_map.check_collision(x, self.position.y) {
             self.position.x = x;
             self.animate(time);    
         }

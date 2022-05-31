@@ -5,6 +5,8 @@ use quad::{
     ty::{BoxedFuture},
 };
 
+const ROW_PIXEL_COUNT: usize = 320 * 10;
+
 pub struct HitMap {
     map: Vec<u8>,
 }
@@ -19,6 +21,23 @@ impl HitMap {
     }
 
     pub fn check_collision(&self, x: f32, y: f32) -> bool {
+        if x + 0.5 < 0.0 || y + 0.5 < 0.0 {            
+            return true;
+        }
+
+        let px = (x + 0.5) as usize;
+        let py = (y + 0.5) as usize;
+        let mut index = (py * ROW_PIXEL_COUNT) + px;
+
+        for _ in 0..16 {
+            for _ in 0..10 {
+                if self.map[index] == 1 {
+                    return true;
+                }
+                index += 1;
+            }
+            index += ROW_PIXEL_COUNT - 10;
+        }
         false
     }
 }
