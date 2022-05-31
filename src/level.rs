@@ -110,7 +110,7 @@ fn level_start(
         animation_phase: 0.0,
     };
 
-    let camera_position = SCREEN_WIDTH * SCREEN_COUNT / 2.0 - SCREEN_WIDTH / 2.0;
+    let camera_position = TOTAL_SCREEN_WIDTH / 2.0 - SCREEN_WIDTH / 2.0;
 
     let background = commands
         .spawn()
@@ -196,10 +196,24 @@ fn update_player(
         .get(&game_assets.level[level.0].hit_map)
         .unwrap();
 
+    if player.state == PlayerState::Standing && player.can_fall(hit_map) {
+        player.state = PlayerState::Falling;
+    }
+
+    if keyboard.pressed(KeyCode::Up) {
+        player.jump(hit_map);
+    }
     if keyboard.pressed(KeyCode::Left) {
         player.move_left(time.as_ref(), hit_map)
     } else if keyboard.pressed(KeyCode::Right) {
         player.move_right(time.as_ref(), hit_map)
+    }
+
+    if player.state == PlayerState::Jumping {
+        player.move_up(time.as_ref(), hit_map);
+    }
+    if player.state == PlayerState::Falling {
+        player.move_down(time.as_ref(), hit_map);
     }
 
     transform.translation.x = player.position.x + PLAYER_X_OFFSET;

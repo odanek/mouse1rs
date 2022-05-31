@@ -5,6 +5,8 @@ use quad::{
     ty::BoxedFuture,
 };
 
+use crate::constant::{SCREEN_HEIGHT, TOTAL_SCREEN_WIDTH};
+
 const ROW_PIXEL_COUNT: usize = 320 * 10;
 
 pub struct HitMap {
@@ -20,23 +22,55 @@ impl HitMap {
         Self { map }
     }
 
-    pub fn check_collision(&self, x: f32, y: f32) -> bool {
-        if x + 0.5 < 0.0 || y + 0.5 < 0.0 {
-            return true;
+    pub fn kind_at(&self, x: f32, y: f32) -> Option<u8> {
+        let ax = x + 0.5;
+        let ay = y + 0.5;
+
+        if ax < 0.0 || ay < 0.0 || ax >= TOTAL_SCREEN_WIDTH || ay >= SCREEN_HEIGHT {
+            return None;
         }
 
-        let px = (x + 0.5) as usize;
-        let py = (y + 0.5) as usize;
-        let mut index = (py * ROW_PIXEL_COUNT) + px;
+        let px = ax as usize;
+        let py = ay as usize;
+        Some(self.map[py * ROW_PIXEL_COUNT + px])
+    }
 
-        for _ in 0..16 {
-            for _ in 0..10 {
-                if self.map[index] == 1 {
-                    return true;
-                }
-                index += 1;
+    pub fn is_block(&self, x: f32, y: f32) -> bool {
+        return matches!(self.kind_at(x, y), Some(1) | None);
+    }
+
+    pub fn check_left(&self, x: f32, y: f32) -> bool {
+        for yo in 0..16 {
+            if self.is_block(x, y + yo as f32) {
+                return true;
             }
-            index += ROW_PIXEL_COUNT - 10;
+        }
+        false
+    }
+
+    pub fn check_right(&self, x: f32, y: f32) -> bool {
+        for yo in 0..16 {
+            if self.is_block(x + 9.0, y + yo as f32) {
+                return true;
+            }
+        }
+        false
+    }
+
+    pub fn check_top(&self, x: f32, y: f32) -> bool {
+        for xo in 0..10 {
+            if self.is_block(x + xo as f32, y) {
+                return true;
+            }
+        }
+        false
+    }
+
+    pub fn check_bottom(&self, x: f32, y: f32) -> bool {
+        for xo in 0..10 {
+            if self.is_block(x + xo as f32, y + 15.0) {
+                return true;
+            }
         }
         false
     }
