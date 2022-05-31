@@ -97,15 +97,25 @@ fn level_start(
     game_assets: Res<GameAssets>,
     level: Res<Level>,
     windows: Res<Windows>,
+    hit_map_assets: Res<Assets<HitMap>>,
     mut camera: Query<(&Camera2d, &mut Transform)>,
 ) {
     let window_size = windows.primary().size();
+    let hit_map = hit_map_assets
+        .get(&game_assets.level[level.0].hit_map)
+        .unwrap();
+
     let zoom = (window_size.height - TITLE_HEIGHT) / SCREEN_HEIGHT;
 
+    let player_position = Vec2::new(3180.0, 50.0);
     let player = Player {
         orientation: PlayerOrientation::Left,
-        state: PlayerState::Standing,
-        position: Vec2::new(SCREEN_WIDTH * (SCREEN_COUNT - 0.5), 100.0),
+        state: if hit_map.check_bottom(player_position.x, player_position.y + 1.0) {
+            PlayerState::Standing
+        } else {
+            PlayerState::Falling
+        },
+        position: player_position,
         jump_phase: 0.0,
         animation_phase: 0.0,
     };
@@ -143,6 +153,10 @@ fn level_start(
         .spawn()
         .insert_bundle(SpriteSheetBundle {
             texture_atlas: game_assets.player.clone(),
+            sprite: TextureAtlasSprite {
+                index: player.sprite_index(),
+                ..Default::default()
+            },
             transform: Transform::from_xyz(
                 player.position.x + PLAYER_X_OFFSET,
                 PLAYER_Y_OFFSET - player.position.y,
