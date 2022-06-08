@@ -74,6 +74,14 @@ impl HitMap {
         }
         false
     }
+
+    pub fn check_dead(&self, x: f32, y: f32) -> bool {
+        matches!(self.kind_at(x + 5.0, y + 15.0), Some(2))
+    }
+
+    pub fn check_next_level(&self, x: f32, y: f32) -> bool {
+        matches!(self.kind_at(x + 5.0, y + 15.0), Some(3))
+    }
 }
 
 #[derive(Default)]

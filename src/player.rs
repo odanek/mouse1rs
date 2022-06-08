@@ -75,6 +75,14 @@ impl Player {
         !hit_map.check_bottom(self.position.x, self.position.y + 1.0)
     }
 
+    pub fn is_dead(&self, hit_map: &HitMap) -> bool {
+        hit_map.check_dead(self.position.x, self.position.y)
+    }
+
+    pub fn is_next_level(&self, hit_map: &HitMap) -> bool {
+        hit_map.check_next_level(self.position.x, self.position.y)
+    }
+
     pub fn sprite_index(&self) -> usize {
         let index = match self.state {
             PlayerState::Falling | PlayerState::Jumping => 0,

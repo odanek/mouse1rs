@@ -23,6 +23,9 @@ use crate::{
 #[derive(Resource)]
 pub struct Level(pub usize);
 
+#[derive(Resource)]
+pub struct Lifes(pub usize);
+
 pub struct LevelAssets {
     pub background: Handle<Image>,
     pub foreground: Handle<Image>,
@@ -49,14 +52,22 @@ pub struct BackgroundImage;
 #[derive(Component)]
 pub struct SceneRoot;
 
+#[derive(Copy, Clone, PartialEq, Eq)]
+enum LevelState {
+    Play,
+    Quit,
+    Dead,
+    Next,
+}
+
 #[derive(Resource)]
 struct LevelData {
+    state: LevelState,
     camera_position: f32,
     camera_max: f32,
     camera_min: f32,
     root: Entity,
     zoom: f32,
-    quit: bool,
 }
 
 pub struct LevelSchedule {
@@ -77,8 +88,8 @@ impl Scene for LevelScene {
                 .add(finalize_start)
                 .build(),
             update: Scheduler::chain(world)
-                .add(&handle_input)
                 .add(&update_player)
+                .add(&handle_input)
                 .add(&update_zoom)
                 .add(&position_camera)
                 .add(&position_background)
@@ -183,12 +194,12 @@ fn level_start(
         .id();
 
     commands.insert_resource(LevelData {
+        state: LevelState::Play,
         camera_position,
         camera_min,
         camera_max,
         root,
         zoom,
-        quit: false,
     });
 
     if let Ok((_, mut camera_pos)) = camera.single_mut() {
@@ -205,6 +216,7 @@ fn update_player(
     keyboard: Res<KeyboardInput>,
     game_assets: Res<GameAssets>,
     level: Res<Level>,
+    mut level_data: ResMut<LevelData>,
     hit_map_assets: Res<Assets<HitMap>>,
     mut player_query: Query<(&mut Player, &mut Transform, &mut TextureAtlasSprite)>,
 ) {
@@ -232,6 +244,13 @@ fn update_player(
     if player.state == PlayerState::Falling {
         player.move_down(time.as_ref(), hit_map);
     }
+    if player.state == PlayerState::Standing {
+        if player.is_dead(hit_map) {
+            level_data.state = LevelState::Dead;
+        } else if player.is_next_level(hit_map) {
+            level_data.state = LevelState::Next;
+        }
+    }
 
     transform.translation.x = player.position.x + PLAYER_X_OFFSET;
     transform.translation.y = PLAYER_Y_OFFSET - player.position.y;
@@ -240,7 +259,11 @@ fn update_player(
 
 fn handle_input(mut level_data: ResMut<LevelData>, keyboard: Res<KeyboardInput>) {
     if keyboard.just_pressed(KeyCode::Escape) {
-        level_data.quit = true;
+        level_data.state = LevelState::Quit;
+    }
+    if keyboard.pressed(KeyCode::M) && keyboard.pressed(KeyCode::Y) && keyboard.pressed(KeyCode::S)
+    {
+        level_data.state = LevelState::Next;
     }
 }
 
@@ -291,13 +314,20 @@ fn position_background(
 }
 
 fn finalize_update(mut commands: Commands, level_data: ResMut<LevelData>) -> SceneResult {
-    if level_data.quit {
-        commands.entity(level_data.root).despawn_recursive();
-        commands.remove_resource::<Level>();
-        commands.remove_resource::<LevelData>();
-        SceneResult::Pop(SceneStage::Resume)
-    } else {
-        SceneResult::Ok(SceneStage::Update)
+    match level_data.state {
+        LevelState::Quit => {
+            commands.entity(level_data.root).despawn_recursive();
+            commands.remove_resource::<Level>();
+            commands.remove_resource::<LevelData>();
+            SceneResult::Pop(SceneStage::Resume)
+        }
+        LevelState::Dead => {
+            panic!("Dead")
+        }
+        LevelState::Next => {
+            panic!("Next")
+        }
+        _ => SceneResult::Ok(SceneStage::Update),
     }
 }
 
