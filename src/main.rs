@@ -1,6 +1,9 @@
 mod constant;
+mod game_complete;
 mod hit_map;
 mod level;
+mod level_opening;
+mod lost_life;
 mod menu;
 mod mouse;
 mod player;
