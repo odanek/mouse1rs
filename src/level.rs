@@ -16,6 +16,7 @@ use quad::{
 use crate::{
     constant::*,
     hit_map::HitMap,
+    level_opening::LevelOpeningScene,
     mouse::GameAssets,
     player::{Player, PlayerOrientation, PlayerState},
 };
@@ -316,7 +317,11 @@ fn position_background(
     }
 }
 
-fn finalize_update(mut commands: Commands, level_data: ResMut<LevelData>) -> SceneResult {
+fn finalize_update(
+    mut commands: Commands,
+    level_data: ResMut<LevelData>,
+    mut level: ResMut<Level>,
+) -> SceneResult {
     match level_data.state {
         LevelState::Quit => {
             commands.entity(level_data.root).despawn_recursive();
@@ -328,7 +333,10 @@ fn finalize_update(mut commands: Commands, level_data: ResMut<LevelData>) -> Sce
             panic!("Dead")
         }
         LevelState::Next => {
-            panic!("Next")
+            commands.entity(level_data.root).despawn_recursive();
+            commands.remove_resource::<LevelData>();
+            level.0 += 1;
+            SceneResult::Replace(Box::new(LevelOpeningScene::default()), SceneStage::Start)
         }
         _ => SceneResult::Ok(SceneStage::Update),
     }

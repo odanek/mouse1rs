@@ -13,6 +13,7 @@ use quad::{
 
 use crate::{
     level::{Level, LevelScene, Lifes},
+    level_opening::LevelOpeningScene,
     mouse::GameAssets,
 };
 
@@ -182,5 +183,5 @@ fn menu_pause(
     commands.remove_resource::<MenuData>();
     commands.insert_resource(Level(0));
     lifes.count = 5;
-    SceneResult::Push(Box::new(LevelScene::default()), SceneStage::Start)
+    SceneResult::Push(Box::new(LevelOpeningScene::default()), SceneStage::Start)
 }
