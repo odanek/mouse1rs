@@ -13,7 +13,11 @@ use quad::{
     },
 };
 
-use crate::{hit_map::HitMap, level::LevelAssets, menu::MenuScene};
+use crate::{
+    hit_map::HitMap,
+    level::{LevelAssets, Lifes},
+    menu::MenuScene,
+};
 
 #[derive(Resource)]
 pub struct GameAssets {
@@ -75,6 +79,11 @@ fn mouse_start(
         font: font.clone(),
         level,
         player,
+    });
+
+    commands.insert_resource(Lifes {
+        count: 0,
+        entity: [None; 5],
     });
 
     commands

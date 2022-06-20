@@ -1,5 +1,5 @@
 use quad::{
-    ecs::{Commands, Entity, IntoSystem, Res, Resource, Schedule, Scheduler, World},
+    ecs::{Commands, Entity, IntoSystem, Res, ResMut, Resource, Schedule, Scheduler, World},
     input::{KeyCode, KeyboardInput},
     render::color::Color,
     run::{Scene, SceneResult, SceneStage},
@@ -12,7 +12,7 @@ use quad::{
 };
 
 use crate::{
-    level::{Level, LevelScene},
+    level::{Level, LevelScene, Lifes},
     mouse::GameAssets,
 };
 
@@ -173,9 +173,14 @@ fn menu_update(keyboard: Res<KeyboardInput>) -> SceneResult {
     }
 }
 
-fn menu_pause(mut commands: Commands, data: Res<MenuData>) -> SceneResult {
+fn menu_pause(
+    mut commands: Commands,
+    data: Res<MenuData>,
+    mut lifes: ResMut<Lifes>,
+) -> SceneResult {
     commands.entity(data.root).despawn_recursive();
     commands.remove_resource::<MenuData>();
     commands.insert_resource(Level(0));
+    lifes.count = 5;
     SceneResult::Push(Box::new(LevelScene::default()), SceneStage::Start)
 }

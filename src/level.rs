@@ -24,7 +24,10 @@ use crate::{
 pub struct Level(pub usize);
 
 #[derive(Resource)]
-pub struct Lifes(pub usize);
+pub struct Lifes {
+    pub count: usize,
+    pub entity: [Option<Entity>; 5],
+}
 
 pub struct LevelAssets {
     pub background: Handle<Image>,
