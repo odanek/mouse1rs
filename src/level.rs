@@ -17,6 +17,7 @@ use crate::{
     constant::*,
     hit_map::HitMap,
     level_opening::LevelOpeningScene,
+    lost_life::LostLifeScene,
     mouse::GameAssets,
     player::{Player, PlayerOrientation, PlayerState},
 };
@@ -329,7 +330,9 @@ fn finalize_update(
             SceneResult::Pop(SceneStage::Resume)
         }
         LevelState::Dead => {
-            panic!("Dead")
+            commands.entity(level_data.root).despawn_recursive();
+            commands.remove_resource::<LevelData>();
+            SceneResult::Replace(Box::new(LostLifeScene::default()), SceneStage::Start)
         }
         LevelState::Next => {
             commands.entity(level_data.root).despawn_recursive();
