@@ -101,7 +101,6 @@ fn mouse_start(
         })
         .with_children(|parent| {
             parent.spawn().insert_bundle(UiTextBundle {
-                style: Default::default(),
                 text: Text {
                     sections: vec![
                         TextSection {

@@ -148,7 +148,6 @@ fn level_start(
                     min: Vec2::new(0.0, 0.0),
                     max: Vec2::new(BCG_SCREEN_COUNT * SCREEN_WIDTH, SCREEN_HEIGHT),
                 }),
-                custom_size: Some(Vec2::new(BCG_SCREEN_COUNT * SCREEN_WIDTH, SCREEN_HEIGHT)),
                 ..Default::default()
             },
             transform: Transform::from_xy(camera_position / 2.0, 0.0),

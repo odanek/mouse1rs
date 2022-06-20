@@ -12,7 +12,7 @@ use quad::{
 };
 
 use crate::{
-    level::{Level, LevelScene, Lifes},
+    level::{Level, Lifes},
     level_opening::LevelOpeningScene,
     mouse::GameAssets,
 };
@@ -77,7 +77,6 @@ fn menu_init(mut commands: Commands, assets: Res<GameAssets>) -> SceneResult {
                 })
                 .with_children(|parent| {
                     parent.spawn().insert_bundle(UiTextBundle {
-                        style: Default::default(),
                         text: Text {
                             sections: vec![
                                 TextSection {
@@ -103,7 +102,6 @@ fn menu_init(mut commands: Commands, assets: Res<GameAssets>) -> SceneResult {
                     });
 
                     parent.spawn().insert_bundle(UiTextBundle {
-                        style: Default::default(),
                         text: Text {
                             sections: vec![
                                 TextSection {
@@ -141,7 +139,6 @@ fn menu_init(mut commands: Commands, assets: Res<GameAssets>) -> SceneResult {
                 })
                 .with_children(|parent| {
                     parent.spawn().insert_bundle(UiTextBundle {
-                        style: Default::default(),
                         text: Text {
                             sections: vec![TextSection {
                                 value: "Napsal O. Danek v roce 2022 v jazyce Rust".to_string(),
