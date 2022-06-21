@@ -15,6 +15,7 @@ use quad::{
 
 use crate::{
     constant::*,
+    game_complete::GameCompleteScene,
     hit_map::HitMap,
     level_opening::LevelOpeningScene,
     lost_life::LostLifeScene,
@@ -337,8 +338,13 @@ fn finalize_update(
         LevelState::Next => {
             commands.entity(level_data.root).despawn_recursive();
             commands.remove_resource::<LevelData>();
-            level.0 += 1;
-            SceneResult::Replace(Box::new(LevelOpeningScene::default()), SceneStage::Start)
+            if level.0 == 4 {
+                commands.remove_resource::<Level>();
+                SceneResult::Replace(Box::new(GameCompleteScene::default()), SceneStage::Start)
+            } else {
+                level.0 += 1;
+                SceneResult::Replace(Box::new(LevelOpeningScene::default()), SceneStage::Start)
+            }
         }
         _ => SceneResult::Ok(SceneStage::Update),
     }
