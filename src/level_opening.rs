@@ -13,7 +13,7 @@ use quad::{
 
 use crate::{
     level::{Level, LevelScene},
-    mouse::GameAssets,
+    mouse::{render_lifes, GameAssets},
 };
 
 pub struct LevelOpeningSchedule {
@@ -42,7 +42,10 @@ pub struct LevelOpeningScene {
 impl Scene for LevelOpeningScene {
     fn update(&mut self, stage: SceneStage, world: &mut World) -> SceneResult {
         let schedule = self.schedule.get_or_insert_with(|| LevelOpeningSchedule {
-            start: Scheduler::single(level_opening_start.system(world)),
+            start: Scheduler::chain(world)
+                .add(&render_lifes)
+                .add(level_opening_start)
+                .build(),
             update: Scheduler::single(level_opening_update.system(world)),
         });
 

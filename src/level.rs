@@ -19,18 +19,12 @@ use crate::{
     hit_map::HitMap,
     level_opening::LevelOpeningScene,
     lost_life::LostLifeScene,
-    mouse::GameAssets,
+    mouse::{GameAssets, Lifes},
     player::{Player, PlayerOrientation, PlayerState},
 };
 
 #[derive(Resource)]
 pub struct Level(pub usize);
-
-#[derive(Resource)]
-pub struct Lifes {
-    pub count: usize,
-    pub entity: [Option<Entity>; 5],
-}
 
 pub struct LevelAssets {
     pub background: Handle<Image>,
@@ -322,15 +316,18 @@ fn finalize_update(
     mut commands: Commands,
     level_data: ResMut<LevelData>,
     mut level: ResMut<Level>,
+    mut lifes: ResMut<Lifes>,
 ) -> SceneResult {
     match level_data.state {
         LevelState::Quit => {
             commands.entity(level_data.root).despawn_recursive();
             commands.remove_resource::<Level>();
             commands.remove_resource::<LevelData>();
+            lifes.count = 0;
             SceneResult::Pop(SceneStage::Resume)
         }
         LevelState::Dead => {
+            lifes.count -= 1;
             commands.entity(level_data.root).despawn_recursive();
             commands.remove_resource::<LevelData>();
             SceneResult::Replace(Box::new(LostLifeScene::default()), SceneStage::Start)
@@ -340,6 +337,7 @@ fn finalize_update(
             commands.remove_resource::<LevelData>();
             if level.0 == 4 {
                 commands.remove_resource::<Level>();
+                lifes.count = 0;
                 SceneResult::Replace(Box::new(GameCompleteScene::default()), SceneStage::Start)
             } else {
                 level.0 += 1;

@@ -1,5 +1,5 @@
 use quad::{
-    ecs::{Commands, Entity, IntoSystem, Res, ResMut, Resource, Schedule, Scheduler, World},
+    ecs::{Commands, Entity, IntoSystem, Res, Resource, Schedule, Scheduler, World},
     input::{KeyCode, KeyboardInput},
     render::color::Color,
     run::{Scene, SceneResult, SceneStage},
@@ -12,8 +12,8 @@ use quad::{
 };
 
 use crate::{
-    level::{Level, LevelScene, Lifes},
-    mouse::GameAssets,
+    level::{Level, LevelScene},
+    mouse::{render_lifes, GameAssets, Lifes},
 };
 
 pub struct LostLifeSchedule {
@@ -34,7 +34,10 @@ pub struct LostLifeScene {
 impl Scene for LostLifeScene {
     fn update(&mut self, stage: SceneStage, world: &mut World) -> SceneResult {
         let schedule = self.schedule.get_or_insert_with(|| LostLifeSchedule {
-            start: Scheduler::single(lost_life_start.system(world)),
+            start: Scheduler::chain(world)
+                .add(&render_lifes)
+                .add(&lost_life_start)
+                .build(),
             update: Scheduler::single(lost_life_update.system(world)),
         });
 
@@ -49,9 +52,8 @@ impl Scene for LostLifeScene {
 fn lost_life_start(
     mut commands: Commands,
     assets: Res<GameAssets>,
-    mut lifes: ResMut<Lifes>,
+    lifes: Res<Lifes>,
 ) -> SceneResult {
-    lifes.count -= 1;
     let message = if lifes.count == 0 {
         "Zemrel jsi"
     } else {

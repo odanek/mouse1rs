@@ -11,7 +11,7 @@ use quad::{
     },
 };
 
-use crate::mouse::GameAssets;
+use crate::{mouse::render_lifes, mouse::GameAssets};
 
 pub struct GameCompleteSchedule {
     start: Schedule<(), SceneResult>,
@@ -31,8 +31,11 @@ pub struct GameCompleteScene {
 impl Scene for GameCompleteScene {
     fn update(&mut self, stage: SceneStage, world: &mut World) -> SceneResult {
         let schedule = self.schedule.get_or_insert_with(|| GameCompleteSchedule {
-            start: Scheduler::single(lost_life_start.system(world)),
-            update: Scheduler::single(lost_life_update.system(world)),
+            start: Scheduler::chain(world)
+                .add(&render_lifes)
+                .add(&game_complete_start)
+                .build(),
+            update: Scheduler::single(game_complete_update.system(world)),
         });
 
         match stage {
@@ -43,7 +46,7 @@ impl Scene for GameCompleteScene {
     }
 }
 
-fn lost_life_start(mut commands: Commands, assets: Res<GameAssets>) -> SceneResult {
+fn game_complete_start(mut commands: Commands, assets: Res<GameAssets>) -> SceneResult {
     let root = commands
         .spawn_bundle(NodeBundle {
             style: Style {
@@ -121,7 +124,7 @@ fn lost_life_start(mut commands: Commands, assets: Res<GameAssets>) -> SceneResu
     SceneResult::Ok(SceneStage::Update)
 }
 
-fn lost_life_update(
+fn game_complete_update(
     mut commands: Commands,
     keyboard: Res<KeyboardInput>,
     data: Res<GameCompleteData>,

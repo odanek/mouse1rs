@@ -1,29 +1,37 @@
 use quad::{
     asset::{AssetServer, Assets, Handle},
-    ecs::{Commands, IntoSystem, Res, ResMut, Resource, Schedule, Scheduler, World},
+    ecs::{
+        Commands, Component, IntoSystem, Query, Res, ResMut, Resource, Schedule, Scheduler, World,
+    },
     pipeline::ClearColor,
-    render::{color::Color, texture::Image, AddressMode},
+    render::{color::Color, texture::Image, view::Visibility, AddressMode},
     run::{Scene, SceneResult, SceneStage},
     sprite::TextureAtlas,
     text::{Font, Text, TextSection, TextStyle},
-    ty::{Size, Vec2},
+    ty::{Rect, Size, Vec2},
     ui::{
         entity::{NodeBundle, UiTextBundle},
         AlignItems, FlexDirection, JustifyContent, PositionType, Style, Val,
     },
 };
 
-use crate::{
-    hit_map::HitMap,
-    level::{LevelAssets, Lifes},
-    menu::MenuScene,
-};
+use crate::{hit_map::HitMap, level::LevelAssets, menu::MenuScene};
 
 #[derive(Resource)]
 pub struct GameAssets {
     pub font: Handle<Font>,
     pub level: Vec<LevelAssets>,
     pub player: Handle<TextureAtlas>,
+}
+
+#[derive(Resource)]
+pub struct Lifes {
+    pub count: usize,
+}
+
+#[derive(Component)]
+pub struct LifeNode {
+    pub index: usize,
 }
 
 pub struct MouseSchedule {
@@ -81,10 +89,7 @@ fn mouse_start(
         player,
     });
 
-    commands.insert_resource(Lifes {
-        count: 0,
-        entity: [None; 5],
-    });
+    commands.insert_resource(Lifes { count: 0 });
 
     commands
         .spawn_bundle(NodeBundle {
@@ -114,7 +119,7 @@ fn mouse_start(
                         TextSection {
                             value: " Mouse".to_string(),
                             style: TextStyle {
-                                font,
+                                font: font.clone(),
                                 font_size: 30.0,
                                 color: Color::GREEN,
                             },
@@ -124,6 +129,52 @@ fn mouse_start(
                 },
                 ..Default::default()
             });
+
+            parent
+                .spawn_bundle(NodeBundle {
+                    style: Style {
+                        size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                        position_type: PositionType::Absolute,
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::FlexStart,
+                        justify_content: JustifyContent::FlexEnd,
+                        ..Default::default()
+                    },
+                    color: Color::NONE.into(),
+                    ..Default::default()
+                })
+                .with_children(|parent| {
+                    parent
+                        .spawn_bundle(NodeBundle {
+                            style: Style {
+                                flex_direction: FlexDirection::Row,
+                                ..Default::default()
+                            },
+                            color: Color::NONE.into(),
+                            ..Default::default()
+                        })
+                        .with_children(|parent| {
+                            for index in 0..5 {
+                                parent
+                                    .spawn_bundle(NodeBundle {
+                                        style: Style {
+                                            size: Size::new(Val::Px(3.0), Val::Px(20.0)),
+                                            margin: Rect {
+                                                left: Val::Px(10.0),
+                                                top: Val::Px(5.0),
+                                                bottom: Val::Px(5.0),
+                                                ..Default::default()
+                                            },
+                                            ..Default::default()
+                                        },
+                                        color: Color::FUCHSIA.into(),
+                                        visibility: Visibility { is_visible: false },
+                                        ..Default::default()
+                                    })
+                                    .insert(LifeNode { index });
+                            }
+                        });
+                });
         });
 
     SceneResult::Ok(SceneStage::Update)
@@ -151,5 +202,11 @@ fn mouse_update(
         SceneResult::Replace(Box::new(MenuScene::default()), SceneStage::Start)
     } else {
         SceneResult::Ok(SceneStage::Update)
+    }
+}
+
+pub fn render_lifes(lifes: Res<Lifes>, mut life_nodes: Query<(&LifeNode, &mut Visibility)>) {
+    for (life, mut visibility) in life_nodes.iter_mut() {
+        visibility.is_visible = life.index < lifes.count;
     }
 }

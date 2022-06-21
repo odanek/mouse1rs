@@ -12,9 +12,9 @@ use quad::{
 };
 
 use crate::{
-    level::{Level, Lifes},
+    level::Level,
     level_opening::LevelOpeningScene,
-    mouse::GameAssets,
+    mouse::{render_lifes, GameAssets, Lifes},
 };
 
 struct MenuSceneSchedule {
@@ -36,7 +36,10 @@ pub struct MenuScene {
 impl Scene for MenuScene {
     fn update(&mut self, stage: SceneStage, world: &mut World) -> SceneResult {
         let schedule = self.schedule.get_or_insert_with(|| MenuSceneSchedule {
-            start: Scheduler::single(menu_init.system(world)),
+            start: Scheduler::chain(world)
+                .add(&render_lifes)
+                .add(&menu_init)
+                .build(),
             update: Scheduler::single(menu_update.system(world)),
             pause: Scheduler::single(menu_pause.system(world)),
         });
