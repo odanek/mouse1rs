@@ -1,17 +1,6 @@
 use std::path::PathBuf;
 
-use quad::{
-    asset::{Assets, Handle},
-    ecs::{Commands, Component, Entity, Query, Res, ResMut, Resource, Schedule, Scheduler, World},
-    input::{KeyCode, KeyboardInput},
-    render::{cameras::Camera2d, texture::Image},
-    run::{Scene, SceneResult, SceneStage},
-    sprite::{Rect, Sprite, SpriteBundle, SpriteSheetBundle, TextureAtlasSprite},
-    timing::Time,
-    transform::{Transform, TransformBundle},
-    ty::{Size, Vec2, Vec3},
-    windowing::Windows,
-};
+use quad::prelude::*;
 
 use crate::{
     constant::*,

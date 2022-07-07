@@ -10,10 +10,7 @@ mod player;
 
 use hit_map::{HitMap, HitMapLoader};
 use mouse::MouseScene;
-use quad::{
-    run::{Quad, QuadConfig},
-    windowing::{LogicalSize, WindowDescriptor},
-};
+use quad::prelude::*;
 
 fn main() {
     Quad::new(QuadConfig {

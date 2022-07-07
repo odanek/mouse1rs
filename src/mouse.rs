@@ -1,19 +1,4 @@
-use quad::{
-    asset::{AssetServer, Assets, Handle},
-    ecs::{
-        Commands, Component, IntoSystem, Query, Res, ResMut, Resource, Schedule, Scheduler, World,
-    },
-    pipeline::ClearColor,
-    render::{color::Color, texture::Image, view::Visibility, AddressMode},
-    run::{Scene, SceneResult, SceneStage},
-    sprite::TextureAtlas,
-    text::{Font, Text, TextSection, TextStyle},
-    ty::{Rect, Size, Vec2},
-    ui::{
-        entity::{NodeBundle, UiTextBundle},
-        AlignItems, FlexDirection, JustifyContent, PositionType, Style, Val,
-    },
-};
+use quad::prelude::*;
 
 use crate::{hit_map::HitMap, level::LevelAssets, menu::MenuScene};
 
@@ -159,7 +144,7 @@ fn mouse_start(
                                     .spawn_bundle(NodeBundle {
                                         style: Style {
                                             size: Size::new(Val::Px(3.0), Val::Px(20.0)),
-                                            margin: Rect {
+                                            margin: UiRect {
                                                 left: Val::Px(10.0),
                                                 top: Val::Px(5.0),
                                                 bottom: Val::Px(5.0),

@@ -1,4 +1,4 @@
-use quad::{ecs::Component, timing::Time, ty::Vec2};
+use quad::prelude::*;
 
 use crate::{constant::*, hit_map::HitMap};
 

@@ -1,15 +1,4 @@
-use quad::{
-    ecs::{Commands, Entity, IntoSystem, Res, Resource, Schedule, Scheduler, World},
-    input::{KeyCode, KeyboardInput},
-    render::color::Color,
-    run::{Scene, SceneResult, SceneStage},
-    text::{Text, TextSection, TextStyle},
-    ty::{Rect, Size},
-    ui::{
-        entity::{NodeBundle, UiTextBundle},
-        AlignItems, FlexDirection, JustifyContent, PositionType, Style, Val,
-    },
-};
+use quad::prelude::*;
 
 use crate::{
     level::{Level, LevelScene},
@@ -89,7 +78,7 @@ fn level_opening_start(
                 .with_children(|parent| {
                     parent.spawn().insert_bundle(UiTextBundle {
                         style: Style {
-                            margin: Rect {
+                            margin: UiRect {
                                 top: Val::Px(15.0),
                                 ..Default::default()
                             },
