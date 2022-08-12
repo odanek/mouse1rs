@@ -338,8 +338,9 @@ fn finalize_update(
 }
 
 fn camera_properties(window_size: Size) -> (f32, f32, f32) {
-    let zoom = (window_size.height - TITLE_HEIGHT) / SCREEN_HEIGHT;
-    let aspect = window_size.width / (window_size.height - TITLE_HEIGHT);
+    let viewport_height = window_size.height - TITLE_HEIGHT;
+    let zoom = viewport_height / SCREEN_HEIGHT;
+    let aspect = window_size.width / viewport_height;
     let camera_max = (TOTAL_SCREEN_WIDTH - SCREEN_HEIGHT * aspect) / 2.0;
     let camera_min = (-TOTAL_SCREEN_WIDTH + SCREEN_HEIGHT * aspect) / 2.0;
     (zoom, camera_min, camera_max)

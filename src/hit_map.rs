@@ -36,7 +36,7 @@ impl HitMap {
     }
 
     pub fn is_block(&self, x: f32, y: f32) -> bool {
-        return matches!(self.kind_at(x, y), Some(1) | None);
+        matches!(self.kind_at(x, y), Some(1) | None)
     }
 
     pub fn check_left(&self, x: f32, y: f32) -> bool {
