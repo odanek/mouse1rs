@@ -24,8 +24,8 @@ impl Scene for LostLifeScene {
     fn update(&mut self, stage: SceneStage, world: &mut World) -> SceneResult {
         let schedule = self.schedule.get_or_insert_with(|| LostLifeSchedule {
             start: Scheduler::chain(world)
-                .add(&render_lifes)
-                .add(&lost_life_start)
+                .add(render_lifes)
+                .add(lost_life_start)
                 .build(),
             update: Scheduler::single(lost_life_update.system(world)),
         });

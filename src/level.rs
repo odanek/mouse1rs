@@ -77,12 +77,12 @@ impl Scene for LevelScene {
                 .add(finalize_start)
                 .build(),
             update: Scheduler::chain(world)
-                .add(&update_player)
-                .add(&handle_input)
-                .add(&update_zoom)
-                .add(&position_camera)
-                .add(&position_background)
-                .add(&finalize_update)
+                .add(update_player)
+                .add(handle_input)
+                .add(update_zoom)
+                .add(position_camera)
+                .add(position_background)
+                .add(finalize_update)
                 .build(),
         });
 
