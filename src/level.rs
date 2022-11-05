@@ -190,7 +190,7 @@ fn level_start(
         zoom,
     });
 
-    if let Ok((_, mut camera_pos)) = camera.single_mut() {
+    if let Ok((_, mut camera_pos)) = camera.get_single_mut() {
         camera_pos.translation.x = camera_position * zoom;
     }
 }
@@ -208,7 +208,7 @@ fn update_player(
     hit_map_assets: Res<Assets<HitMap>>,
     mut player_query: Query<(&mut Player, &mut Transform, &mut TextureAtlasSprite)>,
 ) {
-    let (mut player, mut transform, mut sprite) = player_query.single_mut().unwrap();
+    let (mut player, mut transform, mut sprite) = player_query.single_mut();
     let hit_map = hit_map_assets
         .get(&game_assets.level[level.0].hit_map)
         .unwrap();
@@ -268,7 +268,7 @@ fn update_zoom(
     level_data.camera_position = level_data.camera_position.max(camera_min).min(camera_max);
     level_data.zoom = zoom;
 
-    if let Ok((_, mut root_pos)) = root.single_mut() {
+    if let Ok((_, mut root_pos)) = root.get_single_mut() {
         root_pos.scale.x = zoom;
         root_pos.scale.y = zoom;
     }
@@ -279,7 +279,7 @@ fn position_camera(
     player_query: Query<&Player>,
     mut camera_query: Query<(&Camera2d, &mut Transform)>,
 ) {
-    let player = player_query.single().unwrap();
+    let player = player_query.single();
     let player_x = player.position.x + PLAYER_X_OFFSET;
     level_data.camera_position = level_data
         .camera_position
@@ -288,7 +288,7 @@ fn position_camera(
         .max(level_data.camera_min)
         .min(level_data.camera_max);
 
-    let (_, mut camera_pos) = camera_query.single_mut().unwrap();
+    let (_, mut camera_pos) = camera_query.single_mut();
     camera_pos.translation.x = level_data.camera_position * level_data.zoom;
 }
 
@@ -296,7 +296,7 @@ fn position_background(
     level_data: Res<LevelData>,
     mut background: Query<(&BackgroundImage, &mut Transform)>,
 ) {
-    if let Ok((_, mut background_pos)) = background.single_mut() {
+    if let Ok((_, mut background_pos)) = background.get_single_mut() {
         background_pos.translation.x = level_data.camera_position / 2.0;
     }
 }
