@@ -35,7 +35,7 @@ impl Scene for LevelOpeningScene {
                 .add(render_lifes)
                 .add(level_opening_start)
                 .build(),
-            update: Scheduler::single(level_opening_update.system(world)),
+            update: Scheduler::single(level_opening_update),
         });
 
         match stage {

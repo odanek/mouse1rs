@@ -29,8 +29,8 @@ impl Scene for MenuScene {
                 .add(render_lifes)
                 .add(menu_init)
                 .build(),
-            update: Scheduler::single(menu_update.system(world)),
-            pause: Scheduler::single(menu_pause.system(world)),
+            update: Scheduler::single(menu_update),
+            pause: Scheduler::single(menu_pause),
         });
 
         match stage {

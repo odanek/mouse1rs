@@ -27,7 +27,7 @@ impl Scene for LostLifeScene {
                 .add(render_lifes)
                 .add(lost_life_start)
                 .build(),
-            update: Scheduler::single(lost_life_update.system(world)),
+            update: Scheduler::single(lost_life_update),
         });
 
         match stage {

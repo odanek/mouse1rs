@@ -24,7 +24,7 @@ impl Scene for GameCompleteScene {
                 .add(render_lifes)
                 .add(game_complete_start)
                 .build(),
-            update: Scheduler::single(game_complete_update.system(world)),
+            update: Scheduler::single(game_complete_update),
         });
 
         match stage {

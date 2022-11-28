@@ -32,8 +32,8 @@ pub struct MouseScene {
 impl Scene for MouseScene {
     fn update(&mut self, stage: SceneStage, world: &mut World) -> SceneResult {
         let schedule = self.schedule.get_or_insert_with(|| MouseSchedule {
-            start: Scheduler::single(mouse_start.system(world)),
-            update: Scheduler::single(mouse_update.system(world)),
+            start: Scheduler::single(mouse_start),
+            update: Scheduler::single(mouse_update),
         });
 
         match stage {
