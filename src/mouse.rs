@@ -184,7 +184,7 @@ fn mouse_update(
             let mut image = images.get_mut(&level.background).unwrap();
             image.sampler_descriptor.address_mode_u = AddressMode::Repeat;
         }
-        SceneResult::Replace(Box::new(MenuScene::default()), SceneStage::Start)
+        SceneResult::Replace(Box::<MenuScene>::default(), SceneStage::Start)
     } else {
         SceneResult::Ok(SceneStage::Update)
     }

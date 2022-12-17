@@ -26,5 +26,5 @@ fn main() {
     })
     .add_asset::<HitMap>()
     .init_asset_loader::<HitMapLoader>()
-    .run(Box::new(MouseScene::default()));
+    .run(Box::<MouseScene>::default());
 }

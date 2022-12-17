@@ -172,5 +172,5 @@ fn menu_pause(
     commands.remove_resource::<MenuData>();
     commands.insert_resource(Level(0));
     lifes.count = 5;
-    SceneResult::Push(Box::new(LevelOpeningScene::default()), SceneStage::Start)
+    SceneResult::Push(Box::<LevelOpeningScene>::default(), SceneStage::Start)
 }

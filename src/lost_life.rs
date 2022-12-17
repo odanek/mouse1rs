@@ -139,7 +139,7 @@ fn lost_life_update(
             commands.remove_resource::<Level>();
             SceneResult::Pop(SceneStage::Resume)
         } else {
-            SceneResult::Replace(Box::new(LevelScene::default()), SceneStage::Start)
+            SceneResult::Replace(Box::<LevelScene>::default(), SceneStage::Start)
         }
     } else {
         SceneResult::Ok(SceneStage::Update)

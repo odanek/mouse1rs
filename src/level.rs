@@ -265,7 +265,7 @@ fn update_zoom(
 
     level_data.camera_min = camera_min;
     level_data.camera_max = camera_max;
-    level_data.camera_position = level_data.camera_position.max(camera_min).min(camera_max);
+    level_data.camera_position = level_data.camera_position.clamp(camera_min, camera_max);
     level_data.zoom = zoom;
 
     if let Ok((_, mut root_pos)) = root.get_single_mut() {
@@ -283,10 +283,8 @@ fn position_camera(
     let player_x = player.position.x + PLAYER_X_OFFSET;
     level_data.camera_position = level_data
         .camera_position
-        .min(player_x + 40.0)
-        .max(player_x - 40.0)
-        .max(level_data.camera_min)
-        .min(level_data.camera_max);
+        .clamp(player_x - 40.0, player_x + 40.0)
+        .clamp(level_data.camera_min, level_data.camera_max);
 
     let (_, mut camera_pos) = camera_query.single_mut();
     camera_pos.translation.x = level_data.camera_position * level_data.zoom;
@@ -319,7 +317,7 @@ fn finalize_update(
             lifes.count -= 1;
             commands.entity(level_data.root).despawn_recursive();
             commands.remove_resource::<LevelData>();
-            SceneResult::Replace(Box::new(LostLifeScene::default()), SceneStage::Start)
+            SceneResult::Replace(Box::<LostLifeScene>::default(), SceneStage::Start)
         }
         LevelState::Next => {
             commands.entity(level_data.root).despawn_recursive();
@@ -327,10 +325,10 @@ fn finalize_update(
             if level.0 == 4 {
                 commands.remove_resource::<Level>();
                 lifes.count = 0;
-                SceneResult::Replace(Box::new(GameCompleteScene::default()), SceneStage::Start)
+                SceneResult::Replace(Box::<GameCompleteScene>::default(), SceneStage::Start)
             } else {
                 level.0 += 1;
-                SceneResult::Replace(Box::new(LevelOpeningScene::default()), SceneStage::Start)
+                SceneResult::Replace(Box::<LevelOpeningScene>::default(), SceneStage::Start)
             }
         }
         _ => SceneResult::Ok(SceneStage::Update),

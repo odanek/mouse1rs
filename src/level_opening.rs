@@ -158,7 +158,7 @@ fn level_opening_update(
     if keyboard.just_pressed(KeyCode::Return) {
         commands.entity(data.root).despawn_recursive();
         commands.remove_resource::<LevelOpeningData>();
-        SceneResult::Replace(Box::new(LevelScene::default()), SceneStage::Start)
+        SceneResult::Replace(Box::<LevelScene>::default(), SceneStage::Start)
     } else {
         SceneResult::Ok(SceneStage::Update)
     }
