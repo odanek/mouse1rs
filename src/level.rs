@@ -171,8 +171,8 @@ fn level_start(
         .spawn()
         .push_children(&[foreground, background, player])
         .insert(SceneRoot)
-        .insert_bundle(TransformBundle {
-            local: Transform {
+        .insert_bundle(SpatialBundle {
+            transform: Transform {
                 scale: Vec3::new(zoom, zoom, 1.0),
                 translation: Vec3::new(0.0, -TITLE_HEIGHT / 2.0, 0.0),
                 ..Default::default()

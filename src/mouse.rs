@@ -153,7 +153,7 @@ fn mouse_start(
                                             ..Default::default()
                                         },
                                         color: Color::FUCHSIA.into(),
-                                        visibility: Visibility { is_visible: false },
+                                        visibility: Visibility::Hidden,
                                         ..Default::default()
                                     })
                                     .insert(LifeNode { index });
@@ -192,6 +192,6 @@ fn mouse_update(
 
 pub fn render_lifes(lifes: Res<Lifes>, mut life_nodes: Query<(&LifeNode, &mut Visibility)>) {
     for (life, mut visibility) in life_nodes.iter_mut() {
-        visibility.is_visible = life.index < lifes.count;
+        *visibility = if life.index < lifes.count { Visibility::Inherited } else { Visibility::Hidden };
     }
 }
