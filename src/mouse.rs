@@ -192,6 +192,10 @@ fn mouse_update(
 
 pub fn render_lifes(lifes: Res<Lifes>, mut life_nodes: Query<(&LifeNode, &mut Visibility)>) {
     for (life, mut visibility) in life_nodes.iter_mut() {
-        *visibility = if life.index < lifes.count { Visibility::Inherited } else { Visibility::Hidden };
+        *visibility = if life.index < lifes.count {
+            Visibility::Inherited
+        } else {
+            Visibility::Hidden
+        };
     }
 }
