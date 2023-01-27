@@ -217,19 +217,19 @@ fn convert_level(index: u32) {
     let images =
         Image::load_ob5(input_path, Size::new(320, 192), 11).expect("Unable to load image");
 
-    let level_path = format!("assets/levels/{}", index);
+    let level_path = format!("assets/levels/{index}");
     let joined = Image::join_horizontal(&images[0..10]);
     joined
-        .save_tga(format!("{}/fg.tga", level_path), &palette)
+        .save_tga(format!("{level_path}/fg.tga"), &palette)
         .expect("Unable to write output file");
 
     let hit_map = joined.hit_map();
     hit_map
-        .save(format!("{}/map.hit", level_path))
+        .save(format!("{level_path}/map.hit"))
         .expect("Unabel to save hit map");
 
     images[10]
-        .save_tga(format!("{}/bcg.tga", level_path), &palette)
+        .save_tga(format!("{level_path}/bcg.tga"), &palette)
         .expect("Unable to save backgroudn");
 }
 

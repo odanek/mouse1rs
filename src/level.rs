@@ -23,15 +23,15 @@ pub struct LevelAssets {
 
 impl LevelAssets {
     pub fn foreground_path(level: u32) -> PathBuf {
-        format!("levels/{}/fg.tga", level).into()
+        format!("levels/{level}/fg.tga").into()
     }
 
     pub fn background_path(level: u32) -> PathBuf {
-        format!("levels/{}/bcg.tga", level).into()
+        format!("levels/{level}/bcg.tga").into()
     }
 
     pub fn hit_map_path(level: u32) -> PathBuf {
-        format!("levels/{}/map.hit", level).into()
+        format!("levels/{level}/map.hit").into()
     }
 }
 
