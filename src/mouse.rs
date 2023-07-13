@@ -181,7 +181,7 @@ fn mouse_update(
 
     if levels_loaded && player_loaded {
         for level in game_assets.level.iter() {
-            let mut image = images.get_mut(&level.background).unwrap();
+            let image = images.get_mut(&level.background).unwrap();
             image.sampler_descriptor.address_mode_u = AddressMode::Repeat;
         }
         SceneResult::Replace(Box::<MenuScene>::default(), SceneStage::Start)
