@@ -16,7 +16,7 @@ lto = true
 name = "ob5totga"
 
 [dependencies]
-log = "0.4.18"
+log = "0.4.20"
 cgm = { path = "../cgm" }
 quad = { path = "../quad" }
-anyhow = "1.0.72"
+anyhow = "1.0.75"
