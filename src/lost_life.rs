@@ -132,7 +132,7 @@ fn lost_life_update(
     data: Res<LostLifeData>,
     lifes: Res<Lifes>,
 ) -> SceneResult {
-    if keyboard.just_pressed(KeyCode::Return) {
+    if keyboard.just_pressed(KeyCode::Enter) {
         commands.entity(data.root).despawn_recursive();
         commands.remove_resource::<LostLifeData>();
         if lifes.count == 0 {

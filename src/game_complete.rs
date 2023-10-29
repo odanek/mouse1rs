@@ -118,7 +118,7 @@ fn game_complete_update(
     keyboard: Res<KeyboardInput>,
     data: Res<GameCompleteData>,
 ) -> SceneResult {
-    if keyboard.just_pressed(KeyCode::Return) {
+    if keyboard.just_pressed(KeyCode::Enter) {
         commands.entity(data.root).despawn_recursive();
         commands.remove_resource::<GameCompleteData>();
         SceneResult::Pop(SceneStage::Resume)

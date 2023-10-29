@@ -217,12 +217,12 @@ fn update_player(
         player.state = PlayerState::Falling;
     }
 
-    if keyboard.pressed(KeyCode::Up) {
+    if keyboard.pressed(KeyCode::ArrowUp) {
         player.jump(hit_map);
     }
-    if keyboard.pressed(KeyCode::Left) {
+    if keyboard.pressed(KeyCode::ArrowLeft) {
         player.move_left(time.as_ref(), hit_map)
-    } else if keyboard.pressed(KeyCode::Right) {
+    } else if keyboard.pressed(KeyCode::ArrowRight) {
         player.move_right(time.as_ref(), hit_map)
     }
 
@@ -249,7 +249,9 @@ fn handle_input(mut level_data: ResMut<LevelData>, keyboard: Res<KeyboardInput>)
     if keyboard.just_pressed(KeyCode::Escape) {
         level_data.state = LevelState::Quit;
     }
-    if keyboard.pressed(KeyCode::M) && keyboard.pressed(KeyCode::Y) && keyboard.pressed(KeyCode::S)
+    if keyboard.pressed(KeyCode::KeyM)
+        && keyboard.pressed(KeyCode::KeyY)
+        && keyboard.pressed(KeyCode::KeyS)
     {
         level_data.state = LevelState::Next;
     }

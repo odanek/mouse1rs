@@ -154,9 +154,9 @@ fn menu_init(mut commands: Commands, assets: Res<GameAssets>) -> SceneResult {
 }
 
 fn menu_update(keyboard: Res<KeyboardInput>) -> SceneResult {
-    if keyboard.just_pressed(KeyCode::Escape) || keyboard.just_pressed(KeyCode::Key2) {
+    if keyboard.just_pressed(KeyCode::Escape) || keyboard.just_pressed(KeyCode::Digit2) {
         SceneResult::Quit
-    } else if keyboard.just_pressed(KeyCode::Key1) {
+    } else if keyboard.just_pressed(KeyCode::Digit1) {
         SceneResult::Ok(SceneStage::Pause)
     } else {
         SceneResult::Ok(SceneStage::Update)

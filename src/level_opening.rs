@@ -155,7 +155,7 @@ fn level_opening_update(
     keyboard: Res<KeyboardInput>,
     data: Res<LevelOpeningData>,
 ) -> SceneResult {
-    if keyboard.just_pressed(KeyCode::Return) {
+    if keyboard.just_pressed(KeyCode::Enter) {
         commands.entity(data.root).despawn_recursive();
         commands.remove_resource::<LevelOpeningData>();
         SceneResult::Replace(Box::<LevelScene>::default(), SceneStage::Start)
