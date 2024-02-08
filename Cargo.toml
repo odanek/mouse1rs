@@ -19,4 +19,4 @@ name = "ob5totga"
 log = "0.4.20"
 cgm = { path = "../cgm" }
 quad = { path = "../quad" }
-anyhow = "1.0.75"
+anyhow = "1.0.79"
