@@ -3,7 +3,7 @@ use quad::prelude::*;
 use crate::{
     level::Level,
     level_opening::LevelOpeningScene,
-    mouse::{render_lifes, GameAssets, Lifes},
+    mouse::{GameAssets, Lifes, render_lifes},
 };
 
 struct MenuSceneSchedule {

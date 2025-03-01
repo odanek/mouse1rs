@@ -1,6 +1,6 @@
 use quad::prelude::*;
 
-use crate::{mouse::render_lifes, mouse::GameAssets};
+use crate::{mouse::GameAssets, mouse::render_lifes};
 
 pub struct GameCompleteSchedule {
     start: Schedule<(), SceneResult>,

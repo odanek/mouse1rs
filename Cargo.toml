@@ -3,7 +3,7 @@ name = "mouse1rs"
 description = "The Mouse 1 in Rust"
 version = "0.0.1"
 authors = ["odanek <ondrej.danek@gmail.com>"]
-edition = "2021"
+edition = "2024"
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/odanek/mouse1rs"
@@ -16,7 +16,7 @@ lto = true
 name = "ob5totga"
 
 [dependencies]
-log = "0.4.20"
+log = "0.4.26"
 cgm = { path = "../cgm" }
 quad = { path = "../quad" }
-anyhow = "1.0.79"
+anyhow = "1.0.96"

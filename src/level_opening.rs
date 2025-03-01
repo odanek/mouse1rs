@@ -2,7 +2,7 @@ use quad::prelude::*;
 
 use crate::{
     level::{Level, LevelScene},
-    mouse::{render_lifes, GameAssets},
+    mouse::{GameAssets, render_lifes},
 };
 
 pub struct LevelOpeningSchedule {
