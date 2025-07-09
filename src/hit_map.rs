@@ -1,4 +1,4 @@
-use std::iter::repeat;
+use std::iter::repeat_n;
 
 use quad::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
@@ -17,7 +17,7 @@ impl HitMap {
     pub fn from_rle_bytes(bytes: &[u8]) -> Self {
         let mut map = Vec::with_capacity(320 * 192 * 10);
         for rle in bytes.chunks(2) {
-            map.extend(repeat(rle[1]).take(rle[0] as usize));
+            map.extend(repeat_n(rle[1], rle[0] as usize));
         }
         Self { map }
     }
